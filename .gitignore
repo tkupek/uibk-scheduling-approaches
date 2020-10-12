@@ -9,3 +9,7 @@
 /?/
 *.pdf
 *.jpg
+/.idea/
+**/gradle/wrapper/
+**/gradlew
+**/gradlew.bat
