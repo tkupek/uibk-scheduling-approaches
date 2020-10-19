@@ -2,7 +2,7 @@
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
     <stringAttribute key="bad_container_name" value="/Exercise0/launches/helloWorld.launch"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-        <listEntry value="/Exercise0"/>
+        <listEntry value="/Task1"/>
     </listAttribute>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="4"/>
@@ -12,5 +12,5 @@
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.opt4j.core.start.Opt4J"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="Exercise0"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="./configs/helloWorld.xml"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Exercise0"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Task1"/>
 </launchConfiguration>
