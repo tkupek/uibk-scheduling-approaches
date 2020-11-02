@@ -1,30 +1,18 @@
 package covid;
 
-import java.util.Random;
-import org.opt4j.core.genotype.PermutationGenotype;
+import org.opt4j.core.genotype.SelectMapGenotype;
 import org.opt4j.core.problem.Decoder;
 
 public class CovidDecoder
-        implements Decoder<PermutationGenotype<Region>, ProbesDistribution>
+        implements Decoder<SelectMapGenotype<Region, Lab>, ProbesDistribution>
 {
     @Override
-    public ProbesDistribution decode(PermutationGenotype<Region> genotype)
+    public ProbesDistribution decode(SelectMapGenotype<Region, Lab> genotype)
     {
         var probesDistribution = new ProbesDistribution();
-
-        var labs = new CovidProblem().getLabs();
-
-        Random rand = new Random();
-
-        for ( Region region : genotype )
+        for ( var key : genotype.getKeys() )
         {
-
-            //select a random lab
-            var randomLab = labs.get(rand.nextInt(labs.size()));
-
-            //assign all probes to the random lab, maybe change to assign each probe to a random lab
-            probesDistribution.add(new ProbeDistribution(randomLab, region));
-
+            probesDistribution.add(new ProbeDistribution(genotype.getValue(key), key));
         }
 
         return probesDistribution;

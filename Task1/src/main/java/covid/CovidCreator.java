@@ -1,12 +1,14 @@
 package covid;
 
-import java.util.Collections;
-import javax.inject.Inject;
-import org.opt4j.core.genotype.PermutationGenotype;
+import org.opt4j.core.genotype.SelectMapGenotype;
 import org.opt4j.core.problem.Creator;
 
+import javax.inject.Inject;
+import java.util.Collections;
+import java.util.Random;
+
 public class CovidCreator
-        implements Creator<PermutationGenotype<Region>>
+        implements Creator<SelectMapGenotype<Region, Lab>>
 {
     private CovidProblem problem;
 
@@ -17,11 +19,14 @@ public class CovidCreator
     }
 
     @Override
-    public PermutationGenotype<Region> create()
+    public SelectMapGenotype<Region, Lab> create()
     {
-        var genotype = new PermutationGenotype<Region>();
-        genotype.addAll(problem.getRegions());
-        Collections.shuffle(genotype);
+        var labs = problem.getLabs();
+        var regions = problem.getRegions();
+        var genotype = new SelectMapGenotype<>(regions, labs);
+
+        genotype.init(new Random());
+
         return genotype;
     }
 }
