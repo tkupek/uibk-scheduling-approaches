@@ -1,6 +1,13 @@
 ## Implementing an optimization
 
+**Authors**: Simon Kleinfeld, Tobias Kupek
+
+---
+
 We describe our example problem which is implemented in Task 1.
+
+The code can be found at the respective GitHub repository
+[https://github.com/tkupek/uibk-scheduling-approaches/tree/master/Task1](https://github.com/tkupek/uibk-scheduling-approaches/tree/master/Task1)
 
 ### Covid Test Distribution
 
@@ -47,3 +54,17 @@ Sending the probes to a lab takes the following time in days.
 For our first iteration, we assume **every lab has unlimited test capacity**.
 
 How can we distribute the probes to minimize the shipping time?
+
+
+#### Solution
+
+We created several model classes (Lab, Region, ProbeDistribution, ProbesDistribution) to represent the data.
+
+Beside that, the **CovidCreator** initializes a _SelectMapGenotype_, **CovidDecover** creates a more readable represenation of the data and **CovidEvaluator** helps to calculate the shippping costs.
+
+The class **CovidProblem** collects all parts and is executable by Opt4J.
+
+
+#### Findings
+
+We have found out that 100 random samples are often not sufficient to find the optimal solution with costs _7_.
