@@ -4,9 +4,11 @@ import org.opt4j.core.genotype.SelectMapGenotype;
 import org.opt4j.core.problem.Creator;
 
 import javax.inject.Inject;
-import java.util.Collections;
 import java.util.Random;
 
+/**
+ * Opt4J creator class to generate the Covid genotype
+ */
 public class CovidCreator
         implements Creator<SelectMapGenotype<Region, Lab>>
 {

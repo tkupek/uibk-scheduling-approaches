@@ -1,18 +1,20 @@
 package covid;
 
 import java.util.List;
+
 import lombok.Getter;
 
-public class CovidProblem
-{
+/**
+ * Opt4J problem class to initialize the problem
+ */
+public class CovidProblem {
     @Getter
     private final List<Region> regions;
 
     @Getter
     private final List<Lab> labs;
 
-    public CovidProblem()
-    {
+    public CovidProblem() {
 
         var viennaLab = Lab.builder()
                 .name("Wien")
@@ -99,13 +101,13 @@ public class CovidProblem
                 .build();
 
         regions = List.of(viennaRegion,
-                          upperAustria,
-                          lowerAustria,
-                          tyrol,
-                          styria,
-                          salzburg,
-                          vorarlberg,
-                          carinthia,
-                          burgenland);
+                upperAustria,
+                lowerAustria,
+                tyrol,
+                styria,
+                salzburg,
+                vorarlberg,
+                carinthia,
+                burgenland);
     }
 }
