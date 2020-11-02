@@ -23,7 +23,7 @@ public class CovidDecoder
             var randomLab = labs.get(rand.nextInt(labs.size()));
 
             //assign all probes to the random lab, maybe change to assign each probe to a random lab
-            probesDistribution.put(randomLab, region.getProbes());
+            probesDistribution.add(new ProbeDistribution(randomLab, region));
 
         }
 

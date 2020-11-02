@@ -11,8 +11,19 @@ public class CovidEvaluator
     public Objectives evaluate(ProbesDistribution phenotype)
     {
 
+        double dist = 0;
+        for ( var pd : phenotype )
+        {
+
+            var key = pd.getLab();
+            var region = pd.getRegion();
+
+            dist += region.getLabs()
+                    .getOrDefault(key, 0);
+        }
+
         Objectives objectives = new Objectives();
-        objectives.add("distance", Sign.MIN, phenotype.size());
+        objectives.add("distance", Sign.MIN, dist);
         return objectives;
     }
 

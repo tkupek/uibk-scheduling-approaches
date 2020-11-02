@@ -1,8 +1,8 @@
 package covid;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class ProbesDistribution
-        extends HashMap<Lab, Integer>
+        extends ArrayList<ProbeDistribution>
 {
 }
