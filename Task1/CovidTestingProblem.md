@@ -1,4 +1,4 @@
-## Implementing an optimization"
+## Implementing an optimization
 
 We describe our example problem which is implemented in Task 1.
 
