@@ -1,4 +1,4 @@
-## Task 1Implementing an optimization
+## Task 1 - Implementing an Optimization
 
 **Authors**: Simon Kleinfeld, Tobias Kupek
 
@@ -53,25 +53,26 @@ Sending the probes to a lab takes the following time in days.
 
 For our first iteration, we assume **every lab has unlimited test capacity**.
 
-How can we distribute the probes to minimize the shipping time?
+How can we distribute the probes to **minimize** the **shipping time**?
 
 
 #### Solution
 
 We created several model classes (Lab, Region, ProbeDistribution, ProbesDistribution) to represent the data.
 
-Beside that, the **CovidCreator** initializes a _SelectMapGenotype_, **CovidDecover** creates a more readable represenation of the data and **CovidEvaluator** helps to calculate the shippping costs.
+Beside that, the **CovidCreator** initializes a _SelectMapGenotype_, **CovidDecoder** creates a more readable representation of the data and **CovidEvaluator** helps to calculate the shipping costs.
 
 The class **CovidProblem** collects all parts and is executable by Opt4J.
 
 
 #### Findings
 
-We have found out that 100 random samples are often not sufficient to find the optimal solution with costs _7_.
+We have found out that 100 random samples are often not sufficient to find the optimal solution with cost _7_.
+
+Further details will be presented in the respective course.
 
 
-
-#### How To
+#### Running the Code
 
 1. Follow the steps of the original course repo to build Opt4J
 2. Use CovidProblem.launch file
