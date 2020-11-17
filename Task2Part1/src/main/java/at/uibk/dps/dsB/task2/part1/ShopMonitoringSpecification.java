@@ -5,6 +5,8 @@ import net.sf.opendse.io.SpecificationWriter;
 import net.sf.opendse.model.Specification;
 import net.sf.opendse.visualization.SpecificationViewer;
 
+import java.nio.file.Paths;
+
 /**
  * The {@link ShopMonitoringSpecification} is the class used to practice the
  * creation, the visualization, and the persistent storage of
@@ -25,7 +27,7 @@ public final class ShopMonitoringSpecification {
 	private static final boolean SAVE_SPEC_TO_FILE = true;
 	// The path to the spec folder (TODO: you may have to adjust this if you work on
 	// Windows)
-	private static final String SPEC_FOLDER_PATH = "./specs/";
+	private static final String SPEC_FOLDER_PATH = "Task2Part1/specs/";
 	// File name for saving
 	private static final String FILE_NAME = "customerMonitoringSpec.xml";
 
@@ -33,7 +35,7 @@ public final class ShopMonitoringSpecification {
 	}
 
 	public static void main(String[] args) {
-		String specFilePath = SPEC_FOLDER_PATH + FILE_NAME;
+		String specFilePath = Paths.get(System.getProperty("user.dir"),SPEC_FOLDER_PATH, FILE_NAME).toString();
 		Specification spec = null;
 		if (CREATE_SPEC_FROM_CODE) {
 			spec = SpecificationGenerator.generate();
@@ -48,7 +50,7 @@ public final class ShopMonitoringSpecification {
 		if (SAVE_SPEC_TO_FILE){
 			// saving the specification as .xml
 			SpecificationWriter writer = new SpecificationWriter();
-			writer.write(spec, SPEC_FOLDER_PATH + FILE_NAME);
+			writer.write(spec, specFilePath);
 		}
 	}
 }
