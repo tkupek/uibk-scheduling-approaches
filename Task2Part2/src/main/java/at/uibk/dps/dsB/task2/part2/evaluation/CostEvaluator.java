@@ -48,8 +48,8 @@ public class CostEvaluator
                     {
                         double costRate = PropertyService.getResourceCosts(res);
                         double accumulatedTime = res.getAttribute("Accumulated Usage");
-                        var multiply = costRate * accumulatedTime;
-                        resCost.updateAndGet(v -> (v + multiply));
+                        var costsDividedByTime = costRate * accumulatedTime;
+                        resCost.updateAndGet(v -> (v + costsDividedByTime));
 
                     }
                     else
@@ -72,6 +72,6 @@ public class CostEvaluator
     public int getPriority()
     {
         // To be executed after the timing evaluator
-        return TimingEvaluator.priority + 1;
+        return TimingEvaluator.PRIORITY + 1;
     }
 }
