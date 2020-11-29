@@ -28,6 +28,8 @@ import org.opt4j.core.Objectives;
  * Evaluator for the makespan of the Piw3000
  *
  * @author Fedor Smirnov
+ * @author Simon Kleinfeld
+ * @author Tobias Kupek
  */
 public class TimingEvaluator implements ImplementationEvaluator {
 

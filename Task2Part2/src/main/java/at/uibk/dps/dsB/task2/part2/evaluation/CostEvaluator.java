@@ -16,6 +16,8 @@ import org.opt4j.core.Objectives;
  * The {@link CostEvaluator} is used to calculate the costs of different orchestrations of the PIW3000.
  *
  * @author Fedor Smirnov
+ * @author Simon Kleinfeld
+ * @author Tobias Kupek
  */
 public class CostEvaluator
         implements ImplementationEvaluator {
