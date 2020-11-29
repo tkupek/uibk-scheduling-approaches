@@ -40,7 +40,7 @@ public class TimingEvaluator implements ImplementationEvaluator {
     private final Objective makeSpanObjective = new Objective("Makespan [TU]", Sign.MIN);
 
     private static final String END_TIME_ATTRIBUTE = "End Time";
-    private static final String ACCUMULATED_USAGE_ATTRIBUTE = "Accumulated Usage";
+    protected static final String ACCUMULATED_USAGE_ATTRIBUTE = "Accumulated Usage";
 
     @Override
     public Specification evaluate(Specification implementation, Objectives objectives) {
@@ -74,27 +74,25 @@ public class TimingEvaluator implements ImplementationEvaluator {
     private double getExecutionTime(Task task, Specification implementation,
                                     HashMap<Task, Double> startTimes, HashMap<Task, Double> endTimes,
                                     Application<Task, Dependency> application, double result) {
+        double executionTime = 0D;
+        if(TaskPropertyService.isProcess(task)) {
+            executionTime = this.getTaskTime(task, implementation.getMappings());
+        }
+        if(TaskPropertyService.isCommunication(task)) {
+            executionTime = this.getTransmissionTime((Communication) task, implementation.getRoutings().get(task));
+        }
 
-        // TODO Tobias, finish refactoring
-
-        //calculate execution time based on type
-        double execTime = TaskPropertyService.isProcess(task)
-                ? this.getTaskTime(task, implementation.getMappings())
-                : this.getTransmissionTime((Communication) task,
-                implementation.getRoutings()
-                        .get(task));
-        double start = startTimes.get(task);
-        double endTime = start + execTime;
-
+        double endTime = startTimes.get(task) + executionTime;
         endTimes.put(task, endTime);
         task.setAttribute(END_TIME_ATTRIBUTE, endTime);
 
-        double newResult = 0.;
-        //depth first traversal of successor, find the maximum time
-        for (Task succ : application.getSuccessors(task)) {
-            updateSuccessorStartTime(endTime, startTimes, succ);
-            var tmp = getExecutionTime(succ, implementation, startTimes, endTimes, application, newResult);
-            newResult = Math.max(tmp, endTime);
+        double newResult = 0D;
+
+        // Go through all successors and check for longest execution time
+        for (Task successor : application.getSuccessors(task)) {
+            updateSuccessorStartTime(successor, startTimes, endTime);
+            var successorExecutionTime = getExecutionTime(successor, implementation, startTimes, endTimes, application, newResult);
+            newResult = Math.max(successorExecutionTime, endTime); // TODO why do we compare the exeuction time and endTime here
         }
 
         return Math.max(newResult, result);
@@ -109,18 +107,21 @@ public class TimingEvaluator implements ImplementationEvaluator {
         return null;
     }
 
-    private void updateSuccessorStartTime(double endTimePred, Map<Task, Double> startTimes, Task successor) {
-        if (!startTimes.containsKey(successor) || startTimes.get(successor) < endTimePred) {
-            startTimes.put(successor, endTimePred);
+    private void updateSuccessorStartTime(Task successor, Map<Task, Double> startTimes, double newStartTime) {
+        if (!startTimes.containsKey(successor) || startTimes.get(successor) < newStartTime) {
+            startTimes.put(successor, newStartTime);
         }
     }
 
     private void updateUsage(Resource resource, double usage) {
         if (resource.getAttribute(ACCUMULATED_USAGE_ATTRIBUTE) != null) {
             usage = usage + (double) resource.getAttribute(ACCUMULATED_USAGE_ATTRIBUTE);
-            resource.setAttribute(ACCUMULATED_USAGE_ATTRIBUTE, usage);
+
         }
+        resource.setAttribute(ACCUMULATED_USAGE_ATTRIBUTE, usage);
     }
+
+
 
     private double getTaskTime(Task task, Mappings<Task, Resource> resourceMappings) {
         Set<Mapping<Task, Resource>> taskResources = resourceMappings.get(task);

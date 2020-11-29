@@ -45,7 +45,7 @@ public class CostEvaluator
         implementation.getArchitecture().forEach(res -> {
             if (PropertyService.isCloudResource(res)) {
                 double costRate = PropertyService.getResourceCosts(res);
-                double accumulatedTime = res.getAttribute("Accumulated Usage");
+                double accumulatedTime = res.getAttribute(TimingEvaluator.ACCUMULATED_USAGE_ATTRIBUTE);
                 var costsByTime = costRate * accumulatedTime;
                 resCosts.updateAndGet(v -> (v + costsByTime));
 
