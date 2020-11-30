@@ -73,8 +73,9 @@ public class TimingEvaluator implements ImplementationEvaluator {
                 .orElse(0D);
     }
 
-    // Recursive depth first graph traversal
-    // calculate end times for all nodes in the graph
+    /**
+     * Recursive depth first graph traversal calculate end times for all nodes in the graph
+     */
     private HashMap<Task, Double> getEndTimes(Application<Task, Dependency> application, Task task,
                                               Specification implementation,
                                               HashMap<Task, Double> startTimes,
@@ -108,7 +109,9 @@ public class TimingEvaluator implements ImplementationEvaluator {
         return null;
     }
 
-    // Update Accumulated Usage Attribute, used by the costs evaluator
+    /**
+     * Update Accumulated Usage Attribute, used by the costs evaluator
+     */
     private void updateUsage(Resource resource, double usage) {
         if (resource.getAttribute(ACCUMULATED_USAGE_ATTRIBUTE) != null) {
             usage = usage + (double) resource.getAttribute(ACCUMULATED_USAGE_ATTRIBUTE);
@@ -145,7 +148,9 @@ public class TimingEvaluator implements ImplementationEvaluator {
         return executionTime * runs;
     }
 
-    // Calculate transmission time based on routing and number of instances
+    /**
+     * Calculate transmission time based on routing and number of instances
+     */
     private double getTransmissionTime(Communication comm, Architecture<Resource, Link> routing) {
         double transmissionTimeOneMessage = routing.getEdges()
                 .stream()
@@ -155,8 +160,10 @@ public class TimingEvaluator implements ImplementationEvaluator {
         return transmissionTimeOneMessage * this.getNumberOfInstances(comm);
     }
 
-    // Tasks annotated with ITERATIVE_PEOPLE or ITERATIVE_CARS
-    // have to be executed once for each instance of the respective object in the processed frame
+    /**
+    * Tasks annotated with ITERATIVE_PEOPLE or ITERATIVE_CARS
+    * have to be executed once for each instance of the respective object in the processed frame
+    */
     private int getNumberOfInstances(Task t) {
         if (PropertyService.isIterativeCars(t)) {
             return this.propertyProvider.getCarNumber();
