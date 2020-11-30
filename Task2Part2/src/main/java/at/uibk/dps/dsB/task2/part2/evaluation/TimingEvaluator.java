@@ -30,8 +30,7 @@ import org.opt4j.core.Objectives;
  * @author Simon Kleinfeld
  * @author Tobias Kupek
  */
-public class TimingEvaluator
-        implements ImplementationEvaluator {
+public class TimingEvaluator implements ImplementationEvaluator {
 
     private final PropertyProvider propertyProvider = new PropertyProviderStatic();
 
@@ -137,15 +136,12 @@ public class TimingEvaluator
             return executionTime;
         }
 
-        // Only a limited number of instances is available for each resource type
-        // TODO why do we need this here? should this limitation not already be included in the resourceMappings? -->getNumberOfAvailableInstances throws an execption if the resource is not a cloud resource
+        // There might be multiple instances available for this task
         var availableResources = 1;
         if (PropertyService.isCloudResource(resource)) {
             availableResources = this.propertyProvider.getNumberOfAvailableInstances(resource);
         }
-        int runs = numberOfInstances / availableResources + (numberOfInstances % availableResources > 0
-                ? 1
-                : 0); // TODO this it not clear to me, please explain
+        long runs = Math.round((double) numberOfInstances / (double) availableResources);
         return executionTime * runs;
     }
 
