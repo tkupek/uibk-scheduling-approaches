@@ -3,8 +3,10 @@ package at.uibk.dps.dsB.task2.part2.evaluation;
 import at.uibk.dps.dsB.task2.part2.properties.PropertyProvider;
 import at.uibk.dps.dsB.task2.part2.properties.PropertyProviderStatic;
 import at.uibk.dps.dsB.task2.part2.properties.PropertyService;
+
 import java.util.HashMap;
 import java.util.Set;
+
 import net.sf.opendse.model.Application;
 import net.sf.opendse.model.Architecture;
 import net.sf.opendse.model.Communication;
@@ -29,8 +31,7 @@ import org.opt4j.core.Objectives;
  * @author Tobias Kupek
  */
 public class TimingEvaluator
-        implements ImplementationEvaluator
-{
+        implements ImplementationEvaluator {
 
     private final PropertyProvider propertyProvider = new PropertyProviderStatic();
 
@@ -42,8 +43,7 @@ public class TimingEvaluator
     static final String ACCUMULATED_USAGE_ATTRIBUTE = "Accumulated Usage";
 
     @Override
-    public Specification evaluate(Specification implementation, Objectives objectives)
-    {
+    public Specification evaluate(Specification implementation, Objectives objectives) {
         objectives.add(makeSpanObjective, calculateMakespan(implementation));
         // Implementation annotated => return the impl
         return implementation;
@@ -55,21 +55,18 @@ public class TimingEvaluator
      * @param implementation the orchestration under evaluation
      * @return the makespan of the orchestration
      */
-    private double calculateMakespan(Specification implementation)
-    {
+    private double calculateMakespan(Specification implementation) {
         Application<Task, Dependency> application = implementation.getApplication();
         var startTimes = new HashMap<Task, Double>();
         var endTimes = new HashMap<Task, Double>();
-        var execTimes = new HashMap<Task, Double>();
 
         var root = getApplicationRoot(application);
-        if ( root == null )
-        {
+        if (root == null) {
             return 0D;
         }
 
         startTimes.put(root, 0D);
-        getExecutionTime(root, implementation, startTimes, endTimes, execTimes, application);
+        endTimes = getEndTimes(application, root, implementation, startTimes, endTimes);
         return endTimes.values()
                 .stream()
                 .mapToDouble(e -> e)
@@ -78,67 +75,52 @@ public class TimingEvaluator
     }
 
     // Recursive depth first graph traversal
-    // calculate execution time for all nodes in the graph
-    private void getExecutionTime(Task task,
-                                  Specification implementation,
-                                  HashMap<Task, Double> startTimes,
-                                  HashMap<Task, Double> endTimes,
-                                  HashMap<Task, Double> execTimes,
-                                  Application<Task, Dependency> application)
-    {
+    // calculate end times for all nodes in the graph
+    private HashMap<Task, Double> getEndTimes(Application<Task, Dependency> application, Task task,
+                                              Specification implementation,
+                                              HashMap<Task, Double> startTimes,
+                                              HashMap<Task, Double> endTimes) {
         double executionTime = 0D;
-        if ( TaskPropertyService.isProcess(task) )
-        {
+        if (TaskPropertyService.isProcess(task)) {
             executionTime = this.getTaskTime(task, implementation.getMappings());
         }
-        if ( TaskPropertyService.isCommunication(task) )
-        {
-            executionTime = this.getTransmissionTime((Communication) task,
-                                                     implementation.getRoutings()
-                                                             .get(task));
+        if (TaskPropertyService.isCommunication(task)) {
+            executionTime = this.getTransmissionTime((Communication) task, implementation.getRoutings().get(task));
         }
-        execTimes.put(task, executionTime);
         double endTime = startTimes.get(task) + executionTime;
         endTimes.put(task, endTime);
         task.setAttribute(END_TIME_ATTRIBUTE, endTime);
 
-        // Go through all successors and check for longest execution time
-        for ( Task successor : application.getSuccessors(task) )
-        {
+        // Go through all successors and add calculate end times
+        for (Task successor : application.getSuccessors(task)) {
             startTimes.put(successor, endTime);
-            getExecutionTime(successor, implementation, startTimes, endTimes, execTimes, application);
+            endTimes = getEndTimes(application, successor, implementation, startTimes, endTimes);
         }
 
+        return endTimes;
     }
 
-    private Task getApplicationRoot(Application<Task, Dependency> application)
-    {
-        for ( Task task : application )
-        {
-            if ( application.getPredecessorCount(task) == 0 )
-            {
+    private Task getApplicationRoot(Application<Task, Dependency> application) {
+        for (Task task : application) {
+            if (application.getPredecessorCount(task) == 0) {
                 return task;
             }
         }
         return null;
     }
 
-    //Update Accumulated Usage Attribute, used by the costs evaluator
-    private void updateUsage(Resource resource, double usage)
-    {
-        if ( resource.getAttribute(ACCUMULATED_USAGE_ATTRIBUTE) != null )
-        {
+    // Update Accumulated Usage Attribute, used by the costs evaluator
+    private void updateUsage(Resource resource, double usage) {
+        if (resource.getAttribute(ACCUMULATED_USAGE_ATTRIBUTE) != null) {
             usage = usage + (double) resource.getAttribute(ACCUMULATED_USAGE_ATTRIBUTE);
 
         }
         resource.setAttribute(ACCUMULATED_USAGE_ATTRIBUTE, usage);
     }
 
-    private double getTaskTime(Task task, Mappings<Task, Resource> resourceMappings)
-    {
+    private double getTaskTime(Task task, Mappings<Task, Resource> resourceMappings) {
         Set<Mapping<Task, Resource>> taskResources = resourceMappings.get(task);
-        if ( taskResources.size() != 1 )
-        {
+        if (taskResources.size() != 1) {
             // You can assume that exactly one resource type is chosen for every task
             throw new IllegalArgumentException("More than one ressource mapping for task " + task.getId());
         }
@@ -151,16 +133,14 @@ public class TimingEvaluator
         Resource resource = taskResource.getTarget();
         updateUsage(resource, executionTime * numberOfInstances);
 
-        if ( PropertyService.isSingleExecTask(task) )
-        {
+        if (PropertyService.isSingleExecTask(task)) {
             return executionTime;
         }
 
         // Only a limited number of instances is available for each resource type
         // TODO why do we need this here? should this limitation not already be included in the resourceMappings? -->getNumberOfAvailableInstances throws an execption if the resource is not a cloud resource
         var availableResources = 1;
-        if ( PropertyService.isCloudResource(resource) )
-        {
+        if (PropertyService.isCloudResource(resource)) {
             availableResources = this.propertyProvider.getNumberOfAvailableInstances(resource);
         }
         int runs = numberOfInstances / availableResources + (numberOfInstances % availableResources > 0
@@ -170,8 +150,7 @@ public class TimingEvaluator
     }
 
     // Calculate transmission time based on routing and number of instances
-    private double getTransmissionTime(Communication comm, Architecture<Resource, Link> routing)
-    {
+    private double getTransmissionTime(Communication comm, Architecture<Resource, Link> routing) {
         double transmissionTimeOneMessage = routing.getEdges()
                 .stream()
                 .mapToDouble(e -> this.propertyProvider.getTransmissionTime(comm, e))
@@ -182,14 +161,11 @@ public class TimingEvaluator
 
     // Tasks annotated with ITERATIVE_PEOPLE or ITERATIVE_CARS
     // have to be executed once for each instance of the respective object in the processed frame
-    private int getNumberOfInstances(Task t)
-    {
-        if ( PropertyService.isIterativeCars(t) )
-        {
+    private int getNumberOfInstances(Task t) {
+        if (PropertyService.isIterativeCars(t)) {
             return this.propertyProvider.getCarNumber();
         }
-        if ( PropertyService.isIterativePeople(t) )
-        {
+        if (PropertyService.isIterativePeople(t)) {
             return this.propertyProvider.getNumberOfPeople();
         }
 
@@ -197,8 +173,7 @@ public class TimingEvaluator
     }
 
     @Override
-    public int getPriority()
-    {
+    public int getPriority() {
         return PRIORITY;
     }
 }
