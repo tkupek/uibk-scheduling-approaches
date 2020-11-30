@@ -144,7 +144,7 @@ public class TimingEvaluator implements ImplementationEvaluator {
         if (PropertyService.isCloudResource(resource)) {
             availableResources = this.propertyProvider.getNumberOfAvailableInstances(resource);
         }
-        long runs = Math.round((double) numberOfInstances / (double) availableResources);
+        long runs = (long) Math.ceil((double) numberOfInstances / (double) availableResources);
         return executionTime * runs;
     }
 
