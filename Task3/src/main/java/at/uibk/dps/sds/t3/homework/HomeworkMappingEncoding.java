@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import net.sf.opendse.encoding.mapping.MappingConstraintGenerator;
 import net.sf.opendse.encoding.variables.T;
+import net.sf.opendse.encoding.variables.Variable;
+import net.sf.opendse.encoding.variables.Variables;
 import net.sf.opendse.model.Mapping;
 import net.sf.opendse.model.Mappings;
 import net.sf.opendse.model.Resource;
@@ -30,7 +32,7 @@ public class HomeworkMappingEncoding
         var result = new HashSet<Constraint>();
         result.addAll(addSecretTaskNotOnCloudResourceConstraints(mappings));
         result.addAll(addCapacityConstraints(mappings));
-        result.addAll(addRegionConstraints(mappings));
+        //result.addAll(addRegionConstraints(mappings));
         return result;
     }
 
@@ -82,6 +84,18 @@ public class HomeworkMappingEncoding
     {
         var constraint = new Constraint(Operator.LE, 2); //max two resources
 
+        var rVar = Variables.varR(edgeResource);
+        ArrayList<Variable> vars = new ArrayList<>();
+        vars.add(rVar);
+        for ( Task task : tasks )
+        {
+            var tVar = Variables.varT(task);
+            vars.add(tVar);
+        }
+
+        var andVariable = Variables.varAndVariable(vars.toArray(Variable[]::new));
+
+        constraint.add(Variables.p(andVariable));
         return constraint;
     }
 
@@ -89,32 +103,26 @@ public class HomeworkMappingEncoding
     private Set<Constraint> addSecretTaskNotOnCloudResourceConstraints(Mappings<Task, Resource> mappings)
     {
         var constraints = new HashSet<Constraint>();
-        var cloudResources = new HashSet<Resource>();
-        var secretTasks = new HashSet<Task>();
         for ( var m : mappings )
         {
-            if ( PropertyService.isSecret(m.getSource()) )
+            if ( PropertyService.isSecret(m.getSource()) && PropertyService.isCloud(m.getTarget()) )
             {
-                secretTasks.add(m.getSource());
+                constraints.add(addSecretTaskNotOnCloudResourceConstraint(m.getSource(), m.getTarget()));
             }
-            if ( PropertyService.isCloud(m.getTarget()) )
-            {
-                cloudResources.add(m.getTarget());
-            }
-        }
 
-        for ( var secretTask : secretTasks )
-        {
-            constraints.add(addSecretTaskNotOnCloudResourceConstraint(secretTask, cloudResources));
         }
 
         return constraints;
     }
 
-    private Constraint addSecretTaskNotOnCloudResourceConstraint(Task secretTask, Set<Resource> cloudResources)
+    private Constraint addSecretTaskNotOnCloudResourceConstraint(Task secretTask, Resource cloudResources)
     {
         var constraint = new Constraint(Operator.EQ, 0);//not on cloud resources
-
+        var rVar = Variables.varR(cloudResources);
+        var tVar = Variables.varT(secretTask);
+        var andVariable = Variables.varAndVariable(rVar, tVar);
+        constraint.add(Variables.p(andVariable));
+        System.out.println(constraint);
         return constraint;
     }
 
