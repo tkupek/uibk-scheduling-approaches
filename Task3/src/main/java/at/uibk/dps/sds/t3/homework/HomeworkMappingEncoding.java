@@ -8,7 +8,9 @@ import net.sf.opendse.encoding.mapping.MappingConstraintGenerator;
 import net.sf.opendse.encoding.variables.T;
 import net.sf.opendse.model.Mappings;
 import net.sf.opendse.model.Resource;
+import net.sf.opendse.model.Specification;
 import net.sf.opendse.model.Task;
+import net.sf.opendse.optimization.SpecificationWrapper;
 
 /**
  * 
@@ -17,6 +19,12 @@ import net.sf.opendse.model.Task;
  * @author Fedor Smirnov
  */
 public class HomeworkMappingEncoding implements MappingConstraintGenerator {
+	
+	protected final Specification spec;
+	
+	public HomeworkMappingEncoding(SpecificationWrapper specWrapper) {
+		this.spec = specWrapper.getSpecification();
+	}
 
 	@Override
 	public Set<Constraint> toConstraints(Set<T> processVariables, Mappings<Task, Resource> mappings) {
