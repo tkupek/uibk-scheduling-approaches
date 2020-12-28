@@ -13,6 +13,7 @@ import net.sf.opendse.encoding.variables.T;
 import net.sf.opendse.encoding.variables.Variable;
 import net.sf.opendse.encoding.variables.Variables;
 import net.sf.opendse.model.*;
+import net.sf.opendse.model.properties.TaskPropertyService;
 import org.opt4j.satdecoding.Constraint;
 import org.opt4j.satdecoding.Constraint.Operator;
 import net.sf.opendse.optimization.SpecificationWrapper;
@@ -58,13 +59,20 @@ public class HomeworkMappingEncoding
             }
 
             for (Dependency outEdge : spec.getApplication().getOutEdges(task1)) {
-                var task2 = spec.getApplication().getFunction(outEdge).getDest(outEdge);
-                if (!PropertyService.isSecret(task2)) {
+                var childTask = spec.getApplication().getFunction(outEdge).getDest(outEdge);
+                if(!TaskPropertyService.isCommunication(childTask)) {
                     continue;
                 }
 
-                for (Mapping<Task, Resource> mapping2 : mappings.get(task2)) {
-                    constraints.add(addRegionConstraint(mapping, mapping2));
+                for (Dependency outEdgeChild : spec.getApplication().getOutEdges(childTask)) {
+                    var task2 = spec.getApplication().getFunction(outEdgeChild).getDest(outEdgeChild);
+                    if (!PropertyService.isSecret(task2)) {
+                        continue;
+                    }
+
+                    for (Mapping<Task, Resource> mapping2 : mappings.get(task2)) {
+                        constraints.add(addRegionConstraint(mapping, mapping2));
+                    }
                 }
             }
         }
