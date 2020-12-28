@@ -106,7 +106,7 @@ public class ExampleMappingEncoding implements MappingConstraintGenerator {
 	 * 
 	 * sum (M(R)) <= 1
 	 * 
-	 * @param resMapping the resource mappings on that resource
+	 * @param resMappings the resource mappings on that resource
 	 * @return constraints preventing resource sharing
 	 */
 	protected Constraint encodeNoResourceSharingConstraint(Set<Mapping<Task, Resource>> resMappings) {

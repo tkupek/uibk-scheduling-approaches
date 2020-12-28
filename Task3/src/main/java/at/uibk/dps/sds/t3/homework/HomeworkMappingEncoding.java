@@ -5,15 +5,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import at.uibk.dps.sds.t3.example.ExampleMappingEncoding;
 import net.sf.opendse.encoding.mapping.MappingConstraintGenerator;
+import net.sf.opendse.encoding.variables.M;
 import net.sf.opendse.encoding.variables.T;
 import net.sf.opendse.encoding.variables.Variable;
 import net.sf.opendse.encoding.variables.Variables;
-import net.sf.opendse.model.Mapping;
-import net.sf.opendse.model.Mappings;
-import net.sf.opendse.model.Resource;
-import net.sf.opendse.model.Specification;
-import net.sf.opendse.model.Task;
+import net.sf.opendse.model.*;
 import org.opt4j.satdecoding.Constraint;
 import org.opt4j.satdecoding.Constraint.Operator;
 import net.sf.opendse.optimization.SpecificationWrapper;
@@ -24,114 +23,124 @@ import net.sf.opendse.optimization.SpecificationWrapper;
  * @author Fedor Smirnov
  */
 public class HomeworkMappingEncoding
-        implements MappingConstraintGenerator
-{
+        implements MappingConstraintGenerator {
 
-	protected final Specification spec;
+    protected final Specification spec;
 
-	public HomeworkMappingEncoding(SpecificationWrapper specWrapper) {
-		this.spec = specWrapper.getSpecification();
-	}
+    public HomeworkMappingEncoding(SpecificationWrapper specWrapper) {
+        this.spec = specWrapper.getSpecification();
+    }
 
     @Override
-    public Set<Constraint> toConstraints(Set<T> processVariables, Mappings<Task, Resource> mappings)
-    {
+    public Set<Constraint> toConstraints(Set<T> processVariables, Mappings<Task, Resource> mappings) {
 
         var result = new HashSet<Constraint>();
         result.addAll(addSecretTaskNotOnCloudResourceConstraints(mappings));
         result.addAll(addCapacityConstraints(mappings));
-        //result.addAll(addRegionConstraints(mappings));
+        result.addAll(addRegionConstraints(mappings));
+
         return result;
     }
 
-    private Set<Constraint> addRegionConstraints(Mappings<Task, Resource> mappings)
-    {
+    /**
+     * Communicating secret tasks must share the same region
+     *
+     * @param mappings
+     * @return
+     */
+    private Set<Constraint> addRegionConstraints(Mappings<Task, Resource> mappings) {
         var constraints = new HashSet<Constraint>();
-        var secretAndCommunicationTasks = new HashSet<Task>();
-        for ( Mapping<Task, Resource> mapping : mappings )
-        {
-            var t = mapping.getSource();
-            if ( PropertyService.isSecret(t) )
-            {
 
+        for (Mapping<Task, Resource> mapping : mappings) {
+            var task1 = mapping.getSource();
+            if (!PropertyService.isSecret(task1)) {
+                continue;
             }
 
+            for (Dependency outEdge : spec.getApplication().getOutEdges(task1)) {
+                var task2 = spec.getApplication().getFunction(outEdge).getDest(outEdge);
+                if (!PropertyService.isSecret(task2)) {
+                    continue;
+                }
+
+                for (Mapping<Task, Resource> mapping2 : mappings.get(task2)) {
+                    constraints.add(addRegionConstraint(mapping, mapping2));
+                }
+            }
         }
 
         return constraints;
     }
 
-    private Constraint addRegionConstraint()
-    {
-        return new Constraint(Operator.EQ, 1);//one region
-    }
+    private Constraint addRegionConstraint(Mapping<Task, Resource> mapping1, Mapping<Task, Resource> mapping2) {
+        var constraint = new Constraint(Operator.EQ, 0);
 
-    private Set<Constraint> addCapacityConstraints(Mappings<Task, Resource> mappings)
-    {
-        var constraints = new HashSet<Constraint>();
-        var edgeResourcesToTasks = new HashMap<Resource, List<Task>>();
-        for ( Mapping<Task, Resource> mapping : mappings )
-        {
-            if ( PropertyService.isEdge(mapping.getTarget()) )
-            {
-                var tasks = edgeResourcesToTasks.getOrDefault(mapping.getTarget(), new ArrayList<>());
-                tasks.add(mapping.getSource());
-                edgeResourcesToTasks.put(mapping.getTarget(), tasks);
-            }
+        if (!PropertyService.getRegion(mapping1.getTarget()).equals(PropertyService.getRegion(mapping2.getTarget()))) {
+            var mVar1 = Variables.varM(mapping1);
+            var mVar2 = Variables.varM(mapping2);
+            var andVariable = Variables.varAndVariable(mVar1, mVar2);
+            constraint.add(Variables.p(andVariable));
         }
 
-        for ( var resourceListEntry : edgeResourcesToTasks.entrySet() )
-        {
-            constraints.add(addCapacityConstraint(resourceListEntry.getKey(), resourceListEntry.getValue()));
-        }
-
-        return constraints;
-    }
-
-    private Constraint addCapacityConstraint(Resource edgeResource, List<Task> tasks)
-    {
-        var constraint = new Constraint(Operator.LE, 2); //max two resources
-
-        var rVar = Variables.varR(edgeResource);
-        ArrayList<Variable> vars = new ArrayList<>();
-        vars.add(rVar);
-        for ( Task task : tasks )
-        {
-            var tVar = Variables.varT(task);
-            vars.add(tVar);
-        }
-
-        var andVariable = Variables.varAndVariable(vars.toArray(Variable[]::new));
-
-        constraint.add(Variables.p(andVariable));
         return constraint;
     }
 
-    //find out which task is secret and if it's ressource is a cloud resozrce
-    private Set<Constraint> addSecretTaskNotOnCloudResourceConstraints(Mappings<Task, Resource> mappings)
-    {
+    /**
+     * Edge resources can run a maximum of two tasks
+     *
+     * @param mappings
+     * @return
+     */
+    private Set<Constraint> addCapacityConstraints(Mappings<Task, Resource> mappings) {
         var constraints = new HashSet<Constraint>();
-        for ( var m : mappings )
-        {
-            if ( PropertyService.isSecret(m.getSource()) && PropertyService.isCloud(m.getTarget()) )
-            {
-                constraints.add(addSecretTaskNotOnCloudResourceConstraint(m.getSource(), m.getTarget()));
-            }
 
+        Set<Resource> edgeResources = new HashSet<>();
+        for (Mapping<Task, Resource> mapping : mappings) {
+            if (PropertyService.isEdge(mapping.getTarget())) {
+                edgeResources.add(mapping.getTarget());
+            }
+        }
+        for (Resource res : edgeResources) {
+            constraints.add(addCapacityConstraint(mappings.get(res)));
         }
 
         return constraints;
     }
 
-    private Constraint addSecretTaskNotOnCloudResourceConstraint(Task secretTask, Resource cloudResources)
-    {
-        var constraint = new Constraint(Operator.EQ, 0);//not on cloud resources
-        var rVar = Variables.varR(cloudResources);
-        var tVar = Variables.varT(secretTask);
-        var andVariable = Variables.varAndVariable(rVar, tVar);
-        constraint.add(Variables.p(andVariable));
-        System.out.println(constraint);
+    private Constraint addCapacityConstraint(Set<Mapping<Task, Resource>> resMappings) {
+        var constraint = new Constraint(Operator.LE, 2);
+        for (Mapping<Task, Resource> mapping : resMappings) {
+            M mVar = Variables.varM(mapping);
+            constraint.add(Variables.p(mVar));
+        }
         return constraint;
     }
 
+    /**
+     * Secret tasks can only run on edge resources
+     *
+     * @param mappings
+     * @return
+     */
+    private Set<Constraint> addSecretTaskNotOnCloudResourceConstraints(Mappings<Task, Resource> mappings) {
+        var constraints = new HashSet<Constraint>();
+        for (var mapping : mappings) {
+            if (PropertyService.isSecret(mapping.getSource())) {
+                constraints.add(addTaskNotOnCloudResourceConstraint(mapping));
+            }
+        }
+
+        return constraints;
+    }
+
+    private Constraint addTaskNotOnCloudResourceConstraint(Mapping<Task, Resource> mapping) {
+        var constraint = new Constraint(Operator.EQ, 0);
+
+        if (PropertyService.isCloud(mapping.getTarget())) {
+            var mVar = Variables.varM(mapping);
+            constraint.add(Variables.p(mVar));
+        }
+
+        return constraint;
+    }
 }
