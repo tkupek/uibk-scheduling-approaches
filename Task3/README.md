@@ -54,8 +54,8 @@ Following constraints must be enforced to create valid orchestrations:
 
 ### Solution
 
-We implemented all the constraints as an evaluator in the class _TODO_.
-Additionally, all constraints were implemented utilizing SAT constraints in the class _HomeworkMappingEncoding_.
+We implemented all the constraints as an evaluator in the class _HwConstraintEvaluator_. Additionally, all constraints
+were implemented utilizing SAT constraints in the class _HomeworkMappingEncoding_.
 
 A detailed description of the methods, and the implementation can be found in the respective **JavaDoc**.
 
@@ -80,18 +80,20 @@ _Parameters_:
 - maxCloudResPerCluster 5
 
 
-- generations 1000
+- generations 250
 - populationSize 100
 
 The following table shows the time to run the optimizations.
 
-| Specification | Time Evaluator Constraints | Time SAT Constraints (s) |
+| Run | Time Evaluator Constraints | Time SAT Constraints (s) |
 |:-------------:|:--------------------------:|:------------------------:|
-|       1       |             20s            |            10s           |
-|       2       |             20s            |            10s           |
-|       3       |             20s            |            10s           |
+|       1       |             130s           |            8s           |
+|       2       |             170s           |            30s           |
+|       3       |             460s           |            42s           |
 
+The individual times can only be compared with each other to a limited extent because a new specification is generated
+each time. Nevertheless, a clear increase in speed can be seen.
 
-We can clearly see that the SAT constraints result in a _TODO_ % speedup.
-
-This is expected, as the SAT optimization can easily remove solutions that do not satisfy the constraints, whereas the evaluator has to run an evaluation on every possible mapping. Needless to say, the SAT optimizer will scale much better on bigger problem sets. 
+This is expected, as the SAT optimization can easily remove solutions that do not satisfy the constraints, whereas the
+evaluator has to run an evaluation on every possible mapping. Needless to say, the SAT optimizer will scale much better
+on bigger problem sets. 
