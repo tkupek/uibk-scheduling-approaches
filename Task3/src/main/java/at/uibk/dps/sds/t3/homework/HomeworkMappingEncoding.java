@@ -1,18 +1,21 @@
 package at.uibk.dps.sds.t3.homework;
 
-import java.util.*;
-
-import at.uibk.dps.sds.t3.example.ExampleMappingEncoding;
+import java.util.HashSet;
+import java.util.Set;
 import net.sf.opendse.encoding.mapping.MappingConstraintGenerator;
 import net.sf.opendse.encoding.variables.M;
 import net.sf.opendse.encoding.variables.T;
-import net.sf.opendse.encoding.variables.Variable;
 import net.sf.opendse.encoding.variables.Variables;
-import net.sf.opendse.model.*;
+import net.sf.opendse.model.Dependency;
+import net.sf.opendse.model.Mapping;
+import net.sf.opendse.model.Mappings;
+import net.sf.opendse.model.Resource;
+import net.sf.opendse.model.Specification;
+import net.sf.opendse.model.Task;
 import net.sf.opendse.model.properties.TaskPropertyService;
+import net.sf.opendse.optimization.SpecificationWrapper;
 import org.opt4j.satdecoding.Constraint;
 import org.opt4j.satdecoding.Constraint.Operator;
-import net.sf.opendse.optimization.SpecificationWrapper;
 import org.opt4j.satdecoding.Term;
 
 /**
@@ -33,7 +36,7 @@ public class HomeworkMappingEncoding
     public Set<Constraint> toConstraints(Set<T> processVariables, Mappings<Task, Resource> mappings) {
 
         var result = new HashSet<Constraint>();
-        result.addAll(addSecretTaskNotOnCloudResourceConstraints(mappings));
+        result.add(addSecretTaskNotOnCloudResourceConstraint(mappings));
         result.addAll(addCapacityConstraints(mappings));
         result.addAll(addRegionConstraints(mappings));
         result.addAll(encodeTaskMappingNecessityConstraints(processVariables, mappings));
@@ -110,7 +113,8 @@ public class HomeworkMappingEncoding
                 }
             }
 
-            if(commTasks.size() > 0) {
+            if ( !commTasks.isEmpty() )
+            {
                 constraints.add(addRegionConstraint(commTasks, mappings));
             }
         }
@@ -177,12 +181,6 @@ public class HomeworkMappingEncoding
      * @param mappings
      * @return
      */
-    private Set<Constraint> addSecretTaskNotOnCloudResourceConstraints(Mappings<Task, Resource> mappings) {
-        var constraints = new HashSet<Constraint>();
-        constraints.add(addSecretTaskNotOnCloudResourceConstraint(mappings));
-        return constraints;
-    }
-
     private Constraint addSecretTaskNotOnCloudResourceConstraint(Mappings<Task, Resource> mappings) {
         var constraint = new Constraint(Operator.EQ, 0);
         for (var mapping : mappings) {
