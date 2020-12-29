@@ -80,13 +80,14 @@ _Parameters_:
 
 The following table shows the time to run the optimizations.
 
-| Specification | Time Evaluator Constraints | Time SAT Constraints (s) |
+| Run | Time Evaluator Constraints | Time SAT Constraints (s) |
 |:-------------:|:--------------------------:|:------------------------:|
 |       1       |             130s           |            8s           |
 |       2       |             170s           |            30s           |
 |       3       |             460s           |            42s           |
 
-We can clearly see that the SAT constraints result in a ~900% speedup.
+The individual times can only be compared with each other to a limited extent because a new specification is generated
+each time. Nevertheless, a clear increase in speed can be seen.
 
 This is expected, as the SAT optimization can easily remove solutions that do not satisfy the constraints, whereas the
 evaluator has to run an evaluation on every possible mapping. Needless to say, the SAT optimizer will scale much better
