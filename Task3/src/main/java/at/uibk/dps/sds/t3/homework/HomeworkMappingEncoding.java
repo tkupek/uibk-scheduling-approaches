@@ -94,35 +94,35 @@ public class HomeworkMappingEncoding
                 continue;
             }
 
-            HashSet<Task> communications = new HashSet<>();
+            HashSet<Task> commTasks = new HashSet<>();
             for (Dependency dependency : spec.getApplication().getInEdges(task)) {
                 Task t = spec.getApplication().getSource(dependency);
 
                 if (PropertyService.isSecret(t)) {
-                    communications.add(t);
+                    commTasks.add(t);
                 }
             }
 
             for (Dependency dependency : spec.getApplication().getOutEdges(task)) {
                 Task t = spec.getApplication().getDest(dependency);
                 if (PropertyService.isSecret(t)) {
-                    communications.add(t);
+                    commTasks.add(t);
                 }
             }
 
-            if(communications.size() > 0) {
-                constraints.add(addRegionConstraint(communications, mappings));
+            if(commTasks.size() > 0) {
+                constraints.add(addRegionConstraint(commTasks, mappings));
             }
         }
 
         return constraints;
     }
 
-    private Constraint addRegionConstraint(HashSet<Task> communications, Mappings<Task, Resource> mappings) {
+    private Constraint addRegionConstraint(HashSet<Task> commTasks, Mappings<Task, Resource> mappings) {
         var constraint = new Constraint(Operator.LE, 1);
 
         String enforcedRegion = null;
-        for (Task task : communications) {
+        for (Task task : commTasks) {
             for (Mapping<Task, Resource> mapping : mappings.get(task)) {
 
                 var region = PropertyService.getRegion(mapping.getTarget());
