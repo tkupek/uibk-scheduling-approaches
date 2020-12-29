@@ -25,7 +25,7 @@ public class HwConstraintEvaluator
         implements ImplementationEvaluator
 {
 
-    protected final Objective numConstraintViolations = new Objective("Num Constraint Violations", Sign.MIN);
+    private final Objective numConstraintViolations = new Objective("Num Constraint Violations", Sign.MIN);
 
     @Override
     public Specification evaluate(Specification implementation, Objectives objectives)
@@ -48,6 +48,12 @@ public class HwConstraintEvaluator
         return secretTaskOnCloudResource + resourcesWithMoreThanTwoTasks + regionConstraintViolations;
     }
 
+    /**
+     * Counts the number of resources with more than two tasks
+     *
+     * @param implementation the given implementation
+     * @return the number of resources with more than two tasks
+     */
     private int countResourcesWithMoreThanTwoTasks(Specification implementation)
     {
         var constraintViolations = 0;
@@ -70,6 +76,12 @@ public class HwConstraintEvaluator
         return constraintViolations;
     }
 
+    /**
+     * Counts the number of secret tasks on cloud resources
+     *
+     * @param specification the given implementation
+     * @return the number of secret tasks on cloud resources
+     */
     private int countSecretTasksOnCloudResource(Specification specification)
     {
         var mappings = specification.getMappings();
@@ -84,6 +96,12 @@ public class HwConstraintEvaluator
         return violations;
     }
 
+    /**
+     * Counts the number of region constraint violations
+     *
+     * @param specification the given implementation
+     * @return the number of region constraint violations
+     */
     private int countRegionConstraintViolations(Specification specification)
     {
         var violations = 0;
@@ -124,10 +142,10 @@ public class HwConstraintEvaluator
             {
                 violations += addRegionConstraint(commTasks.get(0), commTasks.get(1), specification.getMappings());
             }
-            else
+            else if ( commTasks.size() > 2 )
             {
                 throw new UnsupportedOperationException(
-                        "Communications between != 2 tasks not supported in region constraint");
+                        "Communications between > 2 tasks not supported in region constraint");
             }
         }
 
