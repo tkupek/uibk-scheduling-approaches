@@ -84,10 +84,11 @@ public class HomeworkMappingEncoding
     }
 
     /**
-     * Communicating secret tasks must share the same region
+     * Encodes the constraint for communicating secret tasks which must share the same region.
+     * Method will find all communication tasks and extract neighboring secret tasks.
      *
-     * @param mappings
-     * @return
+     * @param mappings a set of the task mappings
+     * @return the constraint stating that communicating secret tasks must be mapped to the same region
      */
     private Set<Constraint> addRegionConstraints(Mappings<Task, Resource> mappings) {
         var constraints = new HashSet<Constraint>();
@@ -97,7 +98,7 @@ public class HomeworkMappingEncoding
                 continue;
             }
 
-            HashSet<Task> commTasks = new HashSet<>();
+            List<Task> commTasks = new ArrayList<>();
             for (Dependency dependency : spec.getApplication().getInEdges(task)) {
                 Task t = spec.getApplication().getSource(dependency);
 
@@ -113,42 +114,45 @@ public class HomeworkMappingEncoding
                 }
             }
 
-            if ( !commTasks.isEmpty() )
-            {
-                constraints.add(addRegionConstraint(commTasks, mappings));
+            if(commTasks.size() == 2) {
+                constraints.addAll(addRegionConstraint(commTasks.get(0), commTasks.get(1), mappings));
+            } else {
+                throw new UnsupportedOperationException("Communications between != 2 tasks not supported in region constraint");
             }
         }
 
         return constraints;
     }
 
-    private Constraint addRegionConstraint(HashSet<Task> commTasks, Mappings<Task, Resource> mappings) {
-        var constraint = new Constraint(Operator.LE, 1);
+    /**
+     * Compare the mappings for two tasks and adds a constraint that both of them have to be mapped to the same region.
+     *
+     * @param task1 first task
+     * @param task2 second task
+     * @param mappings a set of the task mappings including first and second task
+     * @return collection of constraint to enforce the same region
+     */
+    private Collection<Constraint> addRegionConstraint(Task task1, Task task2, Mappings<Task, Resource> mappings) {
+        List<Constraint> constraints = new ArrayList<>();
 
-        String enforcedRegion = null;
-        for (Task task : commTasks) {
-            for (Mapping<Task, Resource> mapping : mappings.get(task)) {
-
-                var region = PropertyService.getRegion(mapping.getTarget());
-                if(enforcedRegion == null) {
-                    enforcedRegion = region;
-                }
-
-                if(region.equals(enforcedRegion)) {
-                    var mVar = Variables.varM(mapping);
-                    constraint.add(Variables.p(mVar));
+        for (Mapping<Task, Resource> mapping1 : mappings.get(task1)) {
+            for (Mapping<Task, Resource> mapping2 : mappings.get(task2)) {
+                if(!PropertyService.getRegion(mapping1.getTarget()).equals(PropertyService.getRegion(mapping2.getTarget()))) {
+                    var constraint = new Constraint(Operator.LE, 1);
+                    constraint.add(Variables.p(Variables.varM(mapping1)));
+                    constraint.add(Variables.p(Variables.varM(mapping2)));
+                    constraints.add(constraint);
                 }
             }
         }
-
-        return constraint;
+        return constraints;
     }
 
     /**
-     * Edge resources can run a maximum of two tasks
+     * Edge resources can run a maximum of two tasks, creates a capacity constraint for each edge resource
      *
-     * @param mappings
-     * @return
+     * @param mappings a set of the task mappings
+     * @return collection of constraint to enforce capacity constraint
      */
     private Set<Constraint> addCapacityConstraints(Mappings<Task, Resource> mappings) {
         var constraints = new HashSet<Constraint>();
@@ -166,6 +170,12 @@ public class HomeworkMappingEncoding
         return constraints;
     }
 
+    /**
+     * Create capacity constraint, such that edge resources can execute a maximum of two tasks
+     *
+     * @param resMappings mappings for a single edge resource
+     * @return single constraint to enforce capacity constraint for one resource
+     */
     private Constraint addCapacityConstraint(Set<Mapping<Task, Resource>> resMappings) {
         var constraint = new Constraint(Operator.LE, 2);
         for (Mapping<Task, Resource> mapping : resMappings) {
@@ -176,11 +186,15 @@ public class HomeworkMappingEncoding
     }
 
     /**
-     * Secret tasks can only run on edge resources
+     * Secret tasks can only run on edge resources. Creates a single constraint
+     * which forbids execution of secret tasks on cloud resources
      *
-     * @param mappings
-     * @return
+     * @param mappings a set of the task mappings
+     * @return single constraint enforcing the secret task cloud constraint
      */
+    private Set<Constraint> addSecretTaskNotOnCloudResourceConstraints(Mappings<Task, Resource> mappings) {
+        var constraints = new HashSet<Constraint>();
+
     private Constraint addSecretTaskNotOnCloudResourceConstraint(Mappings<Task, Resource> mappings) {
         var constraint = new Constraint(Operator.EQ, 0);
         for (var mapping : mappings) {
@@ -189,6 +203,8 @@ public class HomeworkMappingEncoding
                 constraint.add(Variables.p(mVar));
             }
         }
-        return constraint;
+
+        constraints.add(constraint);
+        return constraints;
     }
 }
