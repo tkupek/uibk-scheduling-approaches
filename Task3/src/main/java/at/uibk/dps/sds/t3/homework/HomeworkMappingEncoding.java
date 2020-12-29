@@ -1,10 +1,6 @@
 package at.uibk.dps.sds.t3.homework;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import at.uibk.dps.sds.t3.example.ExampleMappingEncoding;
 import net.sf.opendse.encoding.mapping.MappingConstraintGenerator;
@@ -39,7 +35,7 @@ public class HomeworkMappingEncoding
         var result = new HashSet<Constraint>();
         result.addAll(addSecretTaskNotOnCloudResourceConstraints(mappings));
         result.addAll(addCapacityConstraints(mappings));
-//        result.addAll(addRegionConstraints(mappings));
+        result.addAll(addRegionConstraints(mappings));
         result.addAll(encodeTaskMappingNecessityConstraints(processVariables, mappings));
 
         return result;
@@ -65,13 +61,13 @@ public class HomeworkMappingEncoding
     /**
      * Encodes the constraint stating that the task encoded by the given variable is
      * mapped on at least one resource.
-     *
+     * <p>
      * - T + sum (M) >= 0
      *
      * @param tVar         The encoding variable of the task
      * @param taskMappings a set of the task mappings
      * @return the constraint stating that the task encoded by the given variable is
-     *         mapped on at least one resource
+     * mapped on at least one resource
      */
     protected Constraint encodeTaskMappingNecessityConstraint(T tVar, Set<Mapping<Task, Resource>> taskMappings) {
         Constraint result = new Constraint(Operator.GE, 0);
@@ -93,42 +89,48 @@ public class HomeworkMappingEncoding
     private Set<Constraint> addRegionConstraints(Mappings<Task, Resource> mappings) {
         var constraints = new HashSet<Constraint>();
 
-        for (Mapping<Task, Resource> mapping : mappings) {
-            var task1 = mapping.getSource();
-            if (!PropertyService.isSecret(task1)) {
+        for (Task task : spec.getApplication().getVertices()) {
+            if (!TaskPropertyService.isCommunication(task)) {
                 continue;
             }
 
-            for (Dependency outEdge : spec.getApplication().getOutEdges(task1)) {
-                var childTask = spec.getApplication().getFunction(outEdge).getDest(outEdge);
-                if(!TaskPropertyService.isCommunication(childTask)) {
-                    continue;
-                }
+            HashSet<Task> communications = new HashSet<>();
+            for (Dependency dependency : spec.getApplication().getInEdges(task)) {
+                Task t = spec.getApplication().getSource(dependency);
 
-                for (Dependency outEdgeChild : spec.getApplication().getOutEdges(childTask)) {
-                    var task2 = spec.getApplication().getFunction(outEdgeChild).getDest(outEdgeChild);
-                    if (!PropertyService.isSecret(task2)) {
-                        continue;
-                    }
-
-                    for (Mapping<Task, Resource> mapping2 : mappings.get(task2)) {
-                        constraints.add(addRegionConstraint(mapping, mapping2));
-                    }
+                if (PropertyService.isSecret(t)) {
+                    communications.add(t);
                 }
+            }
+
+            for (Dependency dependency : spec.getApplication().getOutEdges(task)) {
+                Task t = spec.getApplication().getDest(dependency);
+                if (PropertyService.isSecret(t)) {
+                    communications.add(t);
+                }
+            }
+
+            if(communications.size() > 0) {
+                constraints.add(addRegionConstraint(communications, mappings));
             }
         }
 
         return constraints;
     }
 
-    private Constraint addRegionConstraint(Mapping<Task, Resource> mapping1, Mapping<Task, Resource> mapping2) {
-        var constraint = new Constraint(Operator.EQ, 0);
+    private Constraint addRegionConstraint(HashSet<Task> communications, Mappings<Task, Resource> mappings) {
+        var constraint = new Constraint(Operator.LE, 1);
 
-        if (!PropertyService.getRegion(mapping1.getTarget()).equals(PropertyService.getRegion(mapping2.getTarget()))) {
-            var mVar1 = Variables.varM(mapping1);
-            var mVar2 = Variables.varM(mapping2);
-            var andVariable = Variables.varAndVariable(mVar1, mVar2);
-            constraint.add(Variables.p(andVariable));
+        for (Task task : communications) {
+            for (Mapping<Task, Resource> mapping : mappings.get(task)) {
+
+//                var region = PropertyService.getRegion(mapping.getTarget());
+//
+//                if(enforcedRegion == null) {
+//                    enforcedRegion = region;
+//                }
+
+            }
         }
 
         return constraint;
