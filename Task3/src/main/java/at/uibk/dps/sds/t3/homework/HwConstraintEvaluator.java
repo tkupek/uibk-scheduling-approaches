@@ -1,6 +1,8 @@
 package at.uibk.dps.sds.t3.homework;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import net.sf.opendse.model.Dependency;
 import net.sf.opendse.model.Mapping;
@@ -42,7 +44,7 @@ public class HwConstraintEvaluator
     {
         var secretTaskOnCloudResource = countSecretTasksOnCloudResource(implementation);
         var resourcesWithMoreThanTwoTasks = countResourcesWithMoreThanTwoTasks(implementation);
-        var regionConstraintViolations = countRegionConstraintViolation(implementation);
+        var regionConstraintViolations = countRegionConstraintViolations(implementation);
         return secretTaskOnCloudResource + resourcesWithMoreThanTwoTasks + regionConstraintViolations;
     }
 
@@ -82,10 +84,10 @@ public class HwConstraintEvaluator
         return violations;
     }
 
-    private int countRegionConstraintViolation(Specification specification)
+    private int countRegionConstraintViolations(Specification specification)
     {
-
         var violations = 0;
+
         for ( Task task : specification.getApplication()
                 .getVertices() )
         {
@@ -94,7 +96,7 @@ public class HwConstraintEvaluator
                 continue;
             }
 
-            HashSet<Task> commTasks = new HashSet<>();
+            List<Task> commTasks = new ArrayList<>();
             for ( Dependency dependency : specification.getApplication()
                     .getInEdges(task) )
             {
@@ -118,38 +120,35 @@ public class HwConstraintEvaluator
                 }
             }
 
-            if ( !commTasks.isEmpty() )
+            if ( commTasks.size() == 2 )
             {
-                violations += evaluateRegionConstraintViolations(commTasks, specification.getMappings());
+                violations += addRegionConstraint(commTasks.get(0), commTasks.get(1), specification.getMappings());
+            }
+            else
+            {
+                throw new UnsupportedOperationException(
+                        "Communications between != 2 tasks not supported in region constraint");
             }
         }
 
         return violations;
     }
 
-    private int evaluateRegionConstraintViolations(HashSet<Task> commTasks, Mappings<Task, Resource> mappings)
+    private int addRegionConstraint(Task task1, Task task2, Mappings<Task, Resource> mappings)
     {
+        int violations = 0;
 
-        var violations = 0;
-        String enforcedRegion = null;
-        for ( Task task : commTasks )
+        for ( Mapping<Task, Resource> mapping1 : mappings.get(task1) )
         {
-            for ( Mapping<Task, Resource> mapping : mappings.get(task) )
+            for ( Mapping<Task, Resource> mapping2 : mappings.get(task2) )
             {
-
-                var region = PropertyService.getRegion(mapping.getTarget());
-                if ( enforcedRegion == null )
-                {
-                    enforcedRegion = region;
-                }
-
-                if ( region.equals(enforcedRegion) )
+                if ( !PropertyService.getRegion(mapping1.getTarget())
+                        .equals(PropertyService.getRegion(mapping2.getTarget())) )
                 {
                     violations++;
                 }
             }
         }
-
         return violations;
     }
 
