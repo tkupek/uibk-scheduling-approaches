@@ -121,15 +121,19 @@ public class HomeworkMappingEncoding
     private Constraint addRegionConstraint(HashSet<Task> communications, Mappings<Task, Resource> mappings) {
         var constraint = new Constraint(Operator.LE, 1);
 
+        String enforcedRegion = null;
         for (Task task : communications) {
             for (Mapping<Task, Resource> mapping : mappings.get(task)) {
 
-//                var region = PropertyService.getRegion(mapping.getTarget());
-//
-//                if(enforcedRegion == null) {
-//                    enforcedRegion = region;
-//                }
+                var region = PropertyService.getRegion(mapping.getTarget());
+                if(enforcedRegion == null) {
+                    enforcedRegion = region;
+                }
 
+                if(region.equals(enforcedRegion)) {
+                    var mVar = Variables.varM(mapping);
+                    constraint.add(Variables.p(mVar));
+                }
             }
         }
 
