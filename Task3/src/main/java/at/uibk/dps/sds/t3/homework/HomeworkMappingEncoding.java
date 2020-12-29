@@ -17,6 +17,7 @@ import net.sf.opendse.model.properties.TaskPropertyService;
 import org.opt4j.satdecoding.Constraint;
 import org.opt4j.satdecoding.Constraint.Operator;
 import net.sf.opendse.optimization.SpecificationWrapper;
+import org.opt4j.satdecoding.Term;
 
 /**
  * Class for the implementation of the homework.
@@ -38,8 +39,48 @@ public class HomeworkMappingEncoding
         var result = new HashSet<Constraint>();
         result.addAll(addSecretTaskNotOnCloudResourceConstraints(mappings));
         result.addAll(addCapacityConstraints(mappings));
-        result.addAll(addRegionConstraints(mappings));
+//        result.addAll(addRegionConstraints(mappings));
+        result.addAll(encodeTaskMappingNecessityConstraints(processVariables, mappings));
 
+        return result;
+    }
+
+    /**
+     * Encodes that each task is mapped at least once.
+     *
+     * @param processVariables the variables encoding the activation of processes
+     * @param mappings         the mappings
+     * @return constraint set encoding that each task is mapped at least once
+     */
+    protected Set<Constraint> encodeTaskMappingNecessityConstraints(Set<T> processVariables,
+                                                                    Mappings<Task, Resource> mappings) {
+        Set<Constraint> result = new HashSet<>();
+        for (T tVar : processVariables) {
+            Set<Mapping<Task, Resource>> taskMappings = mappings.get(tVar.getTask());
+            result.add(encodeTaskMappingNecessityConstraint(tVar, taskMappings));
+        }
+        return result;
+    }
+
+    /**
+     * Encodes the constraint stating that the task encoded by the given variable is
+     * mapped on at least one resource.
+     *
+     * - T + sum (M) >= 0
+     *
+     * @param tVar         The encoding variable of the task
+     * @param taskMappings a set of the task mappings
+     * @return the constraint stating that the task encoded by the given variable is
+     *         mapped on at least one resource
+     */
+    protected Constraint encodeTaskMappingNecessityConstraint(T tVar, Set<Mapping<Task, Resource>> taskMappings) {
+        Constraint result = new Constraint(Operator.GE, 0);
+        result.add(new Term(-1, Variables.p(tVar))); // Here you have to pay attention to use the Variables from the encoding
+        // project, not from the optimization project
+        for (Mapping<Task, Resource> mapping : taskMappings) {
+            M mVar = Variables.varM(mapping);
+            result.add(Variables.p(mVar));
+        }
         return result;
     }
 
@@ -132,23 +173,18 @@ public class HomeworkMappingEncoding
      */
     private Set<Constraint> addSecretTaskNotOnCloudResourceConstraints(Mappings<Task, Resource> mappings) {
         var constraints = new HashSet<Constraint>();
-        for (var mapping : mappings) {
-            if (PropertyService.isSecret(mapping.getSource())) {
-                constraints.add(addTaskNotOnCloudResourceConstraint(mapping));
-            }
-        }
-
+        constraints.add(addSecretTaskNotOnCloudResourceConstraint(mappings));
         return constraints;
     }
 
-    private Constraint addTaskNotOnCloudResourceConstraint(Mapping<Task, Resource> mapping) {
+    private Constraint addSecretTaskNotOnCloudResourceConstraint(Mappings<Task, Resource> mappings) {
         var constraint = new Constraint(Operator.EQ, 0);
-
-        if (PropertyService.isCloud(mapping.getTarget())) {
-            var mVar = Variables.varM(mapping);
-            constraint.add(Variables.p(mVar));
+        for (var mapping : mappings) {
+            if (PropertyService.isCloud(mapping.getTarget()) && PropertyService.isSecret(mapping.getSource())) {
+                var mVar = Variables.varM(mapping);
+                constraint.add(Variables.p(mVar));
+            }
         }
-
         return constraint;
     }
 }
