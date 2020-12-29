@@ -54,10 +54,20 @@ Following constraints must be enforced to create valid orchestrations:
 
 ### Solution
 
+**Authors**: Simon Kleinfeld, Tobias Kupek
+
+---
+
+The code can be found at the GitHub repository
+[https://github.com/tkupek/uibk-scheduling-approaches/tree/master/Task3](https://github.com/tkupek/uibk-scheduling-approaches/tree/master/Task3)
+
+---
+
 We implemented all the constraints as an evaluator in the class _HwConstraintEvaluator_. Additionally, all constraints
 were implemented utilizing SAT constraints in the class _HomeworkMappingEncoding_.
 
-A detailed description of the methods and the implementation can be found in the respective **JavaDoc**.
+A detailed description of the methods, and the implementation can be found in the respective **JavaDoc**.
+
 
 #### Performance comparison
 
