@@ -1,7 +1,6 @@
 package at.uibk.dps.sds.t3.homework;
 
 import com.google.inject.Inject;
-
 import net.sf.opendse.encoding.mapping.MappingConstraintGenerator;
 import net.sf.opendse.encoding.mapping.MappingConstraintManager;
 import net.sf.opendse.model.properties.ProcessPropertyService.MappingModes;

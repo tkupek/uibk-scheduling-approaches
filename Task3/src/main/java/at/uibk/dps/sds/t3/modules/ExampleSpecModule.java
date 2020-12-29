@@ -6,14 +6,13 @@ import net.sf.opendse.optimization.io.IOModule;
 
 /**
  * The {@link ExampleSpecModule} binds the {@link ExampleSpecWrapper} spec wrapper.
- * 
- * @author Fedor Smirnov
  *
+ * @author Fedor Smirnov
  */
-public class ExampleSpecModule extends IOModule{
+public class ExampleSpecModule extends IOModule {
 
-	@Override
-	protected void config() {
-		bind(SpecificationWrapper.class).to(ExampleSpecWrapper.class);
-	}
+    @Override
+    protected void config() {
+        bind(SpecificationWrapper.class).to(ExampleSpecWrapper.class);
+    }
 }

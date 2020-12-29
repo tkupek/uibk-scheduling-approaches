@@ -5,13 +5,13 @@ import net.sf.opendse.optimization.evaluator.EvaluatorModule;
 
 /**
  * Binds the simple cost evaluator.
- * 
+ *
  * @author Fedor Smirnov
  */
-public class ExampleCostEvaluatorModule extends EvaluatorModule{
+public class ExampleCostEvaluatorModule extends EvaluatorModule {
 
-	@Override
-	protected void config() {
-		bindEvaluator(ExampleCostEvaluator.class);
-	}
+    @Override
+    protected void config() {
+        bindEvaluator(ExampleCostEvaluator.class);
+    }
 }

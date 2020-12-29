@@ -7,14 +7,13 @@ import net.sf.opendse.optimization.DesignSpaceExplorationModule;
 /**
  * The mode which binds the classes implementing the secrecy encoding (to be
  * implemented as the homework).
- * 
- * @author Fedor Smirnov
  *
+ * @author Fedor Smirnov
  */
-public class HomeworkEncodingModel extends DesignSpaceExplorationModule{
+public class HomeworkEncodingModel extends DesignSpaceExplorationModule {
 
-	@Override
-	protected void config() {
-		bind(MappingConstraintManager.class).to(HomeworkMappingConstraintManager.class);
-	}
+    @Override
+    protected void config() {
+        bind(MappingConstraintManager.class).to(HomeworkMappingConstraintManager.class);
+    }
 }

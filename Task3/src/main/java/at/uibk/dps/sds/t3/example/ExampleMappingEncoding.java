@@ -1,15 +1,6 @@
 package at.uibk.dps.sds.t3.example;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.opt4j.core.start.Constant;
-import org.opt4j.satdecoding.Constraint;
-import org.opt4j.satdecoding.Constraint.Operator;
-import org.opt4j.satdecoding.Term;
-
 import com.google.inject.Inject;
-
 import net.sf.opendse.encoding.mapping.MappingConstraintGenerator;
 import net.sf.opendse.encoding.variables.M;
 import net.sf.opendse.encoding.variables.T;
@@ -18,6 +9,13 @@ import net.sf.opendse.model.Mapping;
 import net.sf.opendse.model.Mappings;
 import net.sf.opendse.model.Resource;
 import net.sf.opendse.model.Task;
+import org.opt4j.core.start.Constant;
+import org.opt4j.satdecoding.Constraint;
+import org.opt4j.satdecoding.Constraint.Operator;
+import org.opt4j.satdecoding.Term;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ExampleMappingEncoding implements MappingConstraintGenerator {
 
@@ -46,13 +44,13 @@ public class ExampleMappingEncoding implements MappingConstraintGenerator {
 
 	/**
 	 * Encodes that each task is mapped at least once.
-	 * 
+	 *
 	 * @param processVariables the variables encoding the activation of processes
 	 * @param mappings         the mappings
 	 * @return constraint set encoding that each task is mapped at least once
 	 */
 	protected Set<Constraint> encodeTaskMappingNecessityConstraints(Set<T> processVariables,
-			Mappings<Task, Resource> mappings) {
+																	Mappings<Task, Resource> mappings) {
 		Set<Constraint> result = new HashSet<>();
 		for (T tVar : processVariables) {
 			Set<Mapping<Task, Resource>> taskMappings = mappings.get(tVar.getTask());
@@ -64,18 +62,18 @@ public class ExampleMappingEncoding implements MappingConstraintGenerator {
 	/**
 	 * Encodes the constraint stating that the task encoded by the given variable is
 	 * mapped on at least one resource.
-	 * 
+	 * <p>
 	 * - T + sum (M) >= 0
-	 * 
+	 *
 	 * @param tVar         The encoding variable of the task
 	 * @param taskMappings a set of the task mappings
 	 * @return the constraint stating that the task encoded by the given variable is
-	 *         mapped on at least one resource
+	 * mapped on at least one resource
 	 */
 	protected Constraint encodeTaskMappingNecessityConstraint(T tVar, Set<Mapping<Task, Resource>> taskMappings) {
 		Constraint result = new Constraint(Operator.GE, 0);
 		result.add(new Term(-1, Variables.p(tVar))); // Here you have to pay attention to use the Variables from the encoding
-										// project, not from the optimization project
+		// project, not from the optimization project
 		for (Mapping<Task, Resource> mapping : taskMappings) {
 			M mVar = Variables.varM(mapping);
 			result.add(Variables.p(mVar));
@@ -85,7 +83,7 @@ public class ExampleMappingEncoding implements MappingConstraintGenerator {
 
 	/**
 	 * Encodes the constraints preventing resource sharing.
-	 * 
+	 *
 	 * @param mappings
 	 * @return
 	 */
@@ -103,9 +101,9 @@ public class ExampleMappingEncoding implements MappingConstraintGenerator {
 
 	/**
 	 * Encodes that resources are not shared.
-	 * 
+	 * <p>
 	 * sum (M(R)) <= 1
-	 * 
+	 *
 	 * @param resMappings the resource mappings on that resource
 	 * @return constraints preventing resource sharing
 	 */
