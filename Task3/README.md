@@ -46,8 +46,8 @@ Following constraints must be enforced to create valid orchestrations:
 
 #### Task Objectives:
 
-- Implement the constraints given above as evaluators.
-- Complete the provided code of the _HomeworkMappingEncoding.class_ to formulate the SAT constraints enforcing mappings which are valid w.r.t. the above description.
+- Implement the constraints given above as evaluators (within the class _HwConstraintEvaluator_; use the launch file _hwEvaluatorLaunch.launch_).
+- Complete the provided code of the _HomeworkMappingEncoding.class_ to formulate the SAT constraints enforcing mappings which are valid w.r.t. the above description (launch file: _homeworkLaunch.launch_).
 - Compare the ways the optimization runs when the constraints are implemented as part of the evaluation on the one and as SAT constraints on the other hand. How do the different solutions scale with an increasing problem size?
 
 
