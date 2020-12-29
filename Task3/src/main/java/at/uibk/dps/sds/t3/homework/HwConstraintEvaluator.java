@@ -92,27 +92,22 @@ public class HwConstraintEvaluator
     private int countRegionConstraintViolations(Specification specification) {
         var violations = 0;
 
-        for (Task task : specification.getApplication()
-                .getVertices()) {
+        for (Task task : specification.getApplication().getVertices()) {
             if (!TaskPropertyService.isCommunication(task)) {
                 continue;
             }
 
             List<Task> commTasks = new ArrayList<>();
-            for (Dependency dependency : specification.getApplication()
-                    .getInEdges(task)) {
-                Task t = specification.getApplication()
-                        .getSource(dependency);
+            for (Dependency dependency : specification.getApplication().getInEdges(task)) {
+                Task t = specification.getApplication().getSource(dependency);
 
                 if (PropertyService.isSecret(t)) {
                     commTasks.add(t);
                 }
             }
 
-            for (Dependency dependency : specification.getApplication()
-                    .getOutEdges(task)) {
-                Task t = specification.getApplication()
-                        .getDest(dependency);
+            for (Dependency dependency : specification.getApplication().getOutEdges(task)) {
+                Task t = specification.getApplication().getDest(dependency);
                 if (PropertyService.isSecret(t)) {
                     commTasks.add(t);
                 }
@@ -121,8 +116,7 @@ public class HwConstraintEvaluator
             if (commTasks.size() == 2) {
                 violations += addRegionConstraint(commTasks.get(0), commTasks.get(1), specification.getMappings());
             } else if (commTasks.size() > 2) {
-                throw new UnsupportedOperationException(
-                        "Communications between > 2 tasks not supported in region constraint");
+                throw new UnsupportedOperationException("Communications between > 2 tasks not supported in region constraint");
             }
         }
 
@@ -134,8 +128,7 @@ public class HwConstraintEvaluator
 
         for (Mapping<Task, Resource> mapping1 : mappings.get(task1)) {
             for (Mapping<Task, Resource> mapping2 : mappings.get(task2)) {
-                if (!PropertyService.getRegion(mapping1.getTarget())
-                        .equals(PropertyService.getRegion(mapping2.getTarget()))) {
+                if (!PropertyService.getRegion(mapping1.getTarget()).equals(PropertyService.getRegion(mapping2.getTarget()))) {
                     violations++;
                 }
             }
