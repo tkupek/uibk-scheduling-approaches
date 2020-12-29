@@ -123,10 +123,10 @@ public class HomeworkMappingEncoding
                 }
             }
 
-            if(commTasks.size() == 2) {
+            if (commTasks.size() == 2) {
                 constraints.addAll(addRegionConstraint(commTasks.get(0), commTasks.get(1), mappings));
-            } else {
-                throw new UnsupportedOperationException("Communications between != 2 tasks not supported in region constraint");
+            } else if (commTasks.size() > 2) {
+                throw new UnsupportedOperationException("Communications between > 2 tasks not supported in region constraint");
             }
         }
 
@@ -136,8 +136,8 @@ public class HomeworkMappingEncoding
     /**
      * Compare the mappings for two tasks and adds a constraint that both of them have to be mapped to the same region.
      *
-     * @param task1 first task
-     * @param task2 second task
+     * @param task1    first task
+     * @param task2    second task
      * @param mappings a set of the task mappings including first and second task
      * @return collection of constraint to enforce the same region
      */
@@ -146,7 +146,7 @@ public class HomeworkMappingEncoding
 
         for (Mapping<Task, Resource> mapping1 : mappings.get(task1)) {
             for (Mapping<Task, Resource> mapping2 : mappings.get(task2)) {
-                if(!PropertyService.getRegion(mapping1.getTarget()).equals(PropertyService.getRegion(mapping2.getTarget()))) {
+                if (!PropertyService.getRegion(mapping1.getTarget()).equals(PropertyService.getRegion(mapping2.getTarget()))) {
                     var constraint = new Constraint(Operator.LE, 1);
                     constraint.add(Variables.p(Variables.varM(mapping1)));
                     constraint.add(Variables.p(Variables.varM(mapping2)));

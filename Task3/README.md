@@ -52,5 +52,41 @@ Following constraints must be enforced to create valid orchestrations:
 - Compare the ways the optimization runs when the constraints are implemented as part of the evaluation on the one and as SAT constraints on the other hand. How do the different solutions scale with an increasing problem size?
 
 
+### Solution
+
+We implemented all the constraints as an evaluator in the class _TODO_.
+Additionally, all constraints were implemented utilizing SAT constraints in the class _HomeworkMappingEncoding_.
+
+A detailed description of the methods, and the implementation can be found in the respective **JavaDoc**.
+
+#### Performance comparison
+
+We measured the performance of the two implementations for three sample specifications for the following parameters.
+
+_Parameters_:
+- functionNumber 5
+- minFunctionLength 1
+- maxFunctionLength 3
+- maxNumSucc 3
+- secrecyProbability 0.5
+- numEdgeClusters 3
+- numCloudClusters 3
+- maxEdgeResPerCluster 5
+- maxCloudResPerCluster 5
 
 
+- generations 1000
+- populationSize 100
+
+The following table shows the time to run the optimizations.
+
+| Specification | Time Evaluator Constraints | Time SAT Constraints (s) |
+|:-------------:|:--------------------------:|:------------------------:|
+|       1       |             20s            |            10s           |
+|       2       |             20s            |            10s           |
+|       3       |             20s            |            10s           |
+
+
+We can clearly see that the SAT constraints result in a _TODO_ % speedup.
+
+This is expected, as the SAT optimization can easily remove solutions which do not satisfy the constraints, whereas the evaluator has to run an evaluation on every possible mapping. Needless to say, the SAT optimizer will scale much better on bigger problem sets.
