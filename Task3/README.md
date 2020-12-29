@@ -57,7 +57,7 @@ Following constraints must be enforced to create valid orchestrations:
 We implemented all the constraints as an evaluator in the class _TODO_.
 Additionally, all constraints were implemented utilizing SAT constraints in the class _HomeworkMappingEncoding_.
 
-A detailed description of the methods, and the implementation can be found in the respective **JavaDoc**.
+A detailed description of the methods and the implementation can be found in the respective **JavaDoc**.
 
 #### Performance comparison
 
@@ -89,4 +89,4 @@ The following table shows the time to run the optimizations.
 
 We can clearly see that the SAT constraints result in a _TODO_ % speedup.
 
-This is expected, as the SAT optimization can easily remove solutions which do not satisfy the constraints, whereas the evaluator has to run an evaluation on every possible mapping. Needless to say, the SAT optimizer will scale much better on bigger problem sets.
+This is expected, as the SAT optimization can easily remove solutions that do not satisfy the constraints, whereas the evaluator has to run an evaluation on every possible mapping. Needless to say, the SAT optimizer will scale much better on bigger problem sets. 
