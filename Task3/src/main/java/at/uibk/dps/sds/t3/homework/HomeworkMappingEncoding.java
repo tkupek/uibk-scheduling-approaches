@@ -2,11 +2,9 @@ package at.uibk.dps.sds.t3.homework;
 
 import java.util.*;
 
-import at.uibk.dps.sds.t3.example.ExampleMappingEncoding;
 import net.sf.opendse.encoding.mapping.MappingConstraintGenerator;
 import net.sf.opendse.encoding.variables.M;
 import net.sf.opendse.encoding.variables.T;
-import net.sf.opendse.encoding.variables.Variable;
 import net.sf.opendse.encoding.variables.Variables;
 import net.sf.opendse.model.*;
 import net.sf.opendse.model.properties.TaskPropertyService;
@@ -94,7 +92,7 @@ public class HomeworkMappingEncoding
                 continue;
             }
 
-            HashSet<Task> commTasks = new HashSet<>();
+            List<Task> commTasks = new ArrayList<>();
             for (Dependency dependency : spec.getApplication().getInEdges(task)) {
                 Task t = spec.getApplication().getSource(dependency);
 
@@ -110,34 +108,30 @@ public class HomeworkMappingEncoding
                 }
             }
 
-            if(commTasks.size() > 0) {
-                constraints.add(addRegionConstraint(commTasks, mappings));
+            if(commTasks.size() == 2) {
+                constraints.addAll(addRegionConstraint(commTasks.get(0), commTasks.get(1), mappings));
+            } else {
+                throw new UnsupportedOperationException("Communications between != 2 tasks not supported in region constraint");
             }
         }
 
         return constraints;
     }
 
-    private Constraint addRegionConstraint(HashSet<Task> commTasks, Mappings<Task, Resource> mappings) {
-        var constraint = new Constraint(Operator.LE, 1);
+    private Collection<Constraint> addRegionConstraint(Task task1, Task task2, Mappings<Task, Resource> mappings) {
+        List<Constraint> constraints = new ArrayList<>();
 
-        String enforcedRegion = null;
-        for (Task task : commTasks) {
-            for (Mapping<Task, Resource> mapping : mappings.get(task)) {
-
-                var region = PropertyService.getRegion(mapping.getTarget());
-                if(enforcedRegion == null) {
-                    enforcedRegion = region;
-                }
-
-                if(region.equals(enforcedRegion)) {
-                    var mVar = Variables.varM(mapping);
-                    constraint.add(Variables.p(mVar));
+        for (Mapping<Task, Resource> mapping1 : mappings.get(task1)) {
+            for (Mapping<Task, Resource> mapping2 : mappings.get(task2)) {
+                if(!PropertyService.getRegion(mapping1.getTarget()).equals(PropertyService.getRegion(mapping2.getTarget()))) {
+                    var constraint = new Constraint(Operator.LE, 1);
+                    constraint.add(Variables.p(Variables.varM(mapping1)));
+                    constraint.add(Variables.p(Variables.varM(mapping2)));
+                    constraints.add(constraint);
                 }
             }
         }
-
-        return constraint;
+        return constraints;
     }
 
     /**
