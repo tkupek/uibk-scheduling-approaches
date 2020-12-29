@@ -43,6 +43,7 @@ Following constraints must be enforced to create valid orchestrations:
 * Any task annotated as a secret must not be executed on cloud resources
 * If two tasks exchange messages and are both annotated as secrets, they both must be executed within the same region
 * Due to their restricted capacity, at most 2 tasks can be executed on a single edge resource
+* Each task has to be mapped onto at least one resource
 
 #### Task Objectives:
 
