@@ -1,16 +1,20 @@
 package at.uibk.dps.sds.t3.homework;
 
-import net.sf.opendse.model.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import net.sf.opendse.model.Dependency;
+import net.sf.opendse.model.Mapping;
+import net.sf.opendse.model.Mappings;
+import net.sf.opendse.model.Resource;
+import net.sf.opendse.model.Specification;
+import net.sf.opendse.model.Task;
 import net.sf.opendse.model.properties.TaskPropertyService;
 import net.sf.opendse.optimization.ImplementationEvaluator;
 import org.opt4j.core.Objective;
 import org.opt4j.core.Objective.Sign;
 import org.opt4j.core.Objectives;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * The evaluator used to enforce the security constraints by means of additional objectives.
@@ -114,7 +118,9 @@ public class HwConstraintEvaluator
             }
 
             if (commTasks.size() == 2) {
-                violations += addRegionConstraint(commTasks.get(0), commTasks.get(1), specification.getMappings());
+                violations += countRegionConstraintViolationForTasks(commTasks.get(0),
+                                                                     commTasks.get(1),
+                                                                     specification.getMappings());
             } else if (commTasks.size() > 2) {
                 throw new UnsupportedOperationException("Communications between > 2 tasks not supported in region constraint");
             }
@@ -123,12 +129,17 @@ public class HwConstraintEvaluator
         return violations;
     }
 
-    private int addRegionConstraint(Task task1, Task task2, Mappings<Task, Resource> mappings) {
+    private int countRegionConstraintViolationForTasks(Task task1, Task task2, Mappings<Task, Resource> mappings)
+    {
         int violations = 0;
 
-        for (Mapping<Task, Resource> mapping1 : mappings.get(task1)) {
-            for (Mapping<Task, Resource> mapping2 : mappings.get(task2)) {
-                if (!PropertyService.getRegion(mapping1.getTarget()).equals(PropertyService.getRegion(mapping2.getTarget()))) {
+        for ( Mapping<Task, Resource> mapping1 : mappings.get(task1) )
+        {
+            for ( Mapping<Task, Resource> mapping2 : mappings.get(task2) )
+            {
+                if ( !PropertyService.getRegion(mapping1.getTarget())
+                        .equals(PropertyService.getRegion(mapping2.getTarget())) )
+                {
                     violations++;
                 }
             }
