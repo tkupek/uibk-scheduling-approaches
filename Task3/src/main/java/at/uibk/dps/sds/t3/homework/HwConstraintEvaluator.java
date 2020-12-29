@@ -1,21 +1,16 @@
 package at.uibk.dps.sds.t3.homework;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import net.sf.opendse.model.Dependency;
-import net.sf.opendse.model.Mapping;
-import net.sf.opendse.model.Mappings;
-import net.sf.opendse.model.Resource;
-import net.sf.opendse.model.Specification;
-import net.sf.opendse.model.Task;
+import net.sf.opendse.model.*;
 import net.sf.opendse.model.properties.TaskPropertyService;
 import net.sf.opendse.optimization.ImplementationEvaluator;
 import org.opt4j.core.Objective;
 import org.opt4j.core.Objective.Sign;
 import org.opt4j.core.Objectives;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The evaluator used to enforce the security constraints by means of additional objectives.
@@ -62,7 +57,10 @@ public class HwConstraintEvaluator
             }
         }
         for (Resource res : edgeResources) {
-            constraintViolations += mappings.get(res).size();
+
+            var size = mappings.get(res)
+                    .size();
+            constraintViolations += size > 2 ? size : 0;
         }
 
         return constraintViolations;

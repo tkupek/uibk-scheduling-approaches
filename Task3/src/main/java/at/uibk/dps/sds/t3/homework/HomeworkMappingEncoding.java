@@ -1,25 +1,17 @@
 package at.uibk.dps.sds.t3.homework;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import net.sf.opendse.encoding.mapping.MappingConstraintGenerator;
 import net.sf.opendse.encoding.variables.M;
 import net.sf.opendse.encoding.variables.T;
 import net.sf.opendse.encoding.variables.Variables;
-import net.sf.opendse.model.Dependency;
-import net.sf.opendse.model.Mapping;
-import net.sf.opendse.model.Mappings;
-import net.sf.opendse.model.Resource;
-import net.sf.opendse.model.Specification;
-import net.sf.opendse.model.Task;
+import net.sf.opendse.model.*;
 import net.sf.opendse.model.properties.TaskPropertyService;
 import net.sf.opendse.optimization.SpecificationWrapper;
 import org.opt4j.satdecoding.Constraint;
 import org.opt4j.satdecoding.Constraint.Operator;
 import org.opt4j.satdecoding.Term;
+
+import java.util.*;
 
 /**
  * Class for the implementation of the homework.
@@ -31,8 +23,7 @@ public class HomeworkMappingEncoding
 
     private final Specification spec;
 
-    HomeworkMappingEncoding(SpecificationWrapper specWrapper)
-    {
+    HomeworkMappingEncoding(SpecificationWrapper specWrapper) {
         this.spec = specWrapper.getSpecification();
     }
 
@@ -52,15 +43,13 @@ public class HomeworkMappingEncoding
      * Encodes that each task is mapped at least once.
      *
      * @param processVariables the variables encoding the activation of processes
-     * @param mappings the mappings
+     * @param mappings         the mappings
      * @return constraint set encoding that each task is mapped at least once
      */
     private Set<Constraint> encodeTaskMappingNecessityConstraints(Set<T> processVariables,
-                                                                  Mappings<Task, Resource> mappings)
-    {
+                                                                  Mappings<Task, Resource> mappings) {
         Set<Constraint> result = new HashSet<>();
-        for ( T tVar : processVariables )
-        {
+        for (T tVar : processVariables) {
             Set<Mapping<Task, Resource>> taskMappings = mappings.get(tVar.getTask());
             result.add(encodeTaskMappingNecessityConstraint(tVar, taskMappings));
         }
@@ -78,14 +67,12 @@ public class HomeworkMappingEncoding
      * @return the constraint stating that the task encoded by the given variable is
      * mapped on at least one resource
      */
-    private Constraint encodeTaskMappingNecessityConstraint(T tVar, Set<Mapping<Task, Resource>> taskMappings)
-    {
+    private Constraint encodeTaskMappingNecessityConstraint(T tVar, Set<Mapping<Task, Resource>> taskMappings) {
         Constraint result = new Constraint(Operator.GE, 0);
         result.add(new Term(-1,
-                            Variables.p(tVar))); // Here you have to pay attention to use the Variables from the encoding
+                Variables.p(tVar))); // Here you have to pay attention to use the Variables from the encoding
         // project, not from the optimization project
-        for ( Mapping<Task, Resource> mapping : taskMappings )
-        {
+        for (Mapping<Task, Resource> mapping : taskMappings) {
             M mVar = Variables.varM(mapping);
             result.add(Variables.p(mVar));
         }
