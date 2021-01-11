@@ -1,15 +1,14 @@
 package at.uibk.dps.dsB.task4.evaluation;
 
-import org.opt4j.core.Objective;
-import org.opt4j.core.Objectives;
-
 import at.uibk.dps.dsB.task4.properties.PropertyProvider;
 import at.uibk.dps.dsB.task4.properties.PropertyProviderDynamic;
-
-import org.opt4j.core.Objective.Sign;
-
+import at.uibk.dps.dsB.task4.properties.PropertyService;
+import java.util.concurrent.atomic.AtomicReference;
 import net.sf.opendse.model.Specification;
 import net.sf.opendse.optimization.ImplementationEvaluator;
+import org.opt4j.core.Objective;
+import org.opt4j.core.Objective.Sign;
+import org.opt4j.core.Objectives;
 
 /**
  * The {@link CostEvaluator} is used to calculate the costs of different
@@ -37,8 +36,34 @@ public class CostEvaluator implements ImplementationEvaluator {
 	 * @param implementation the solution which is being evaluated
 	 * @return the cost of the implementation
 	 */
-	protected double calculateImplementationCost(Specification implementation) {
-		throw new IllegalStateException("Cost Calculation not yet implemented.");
+	protected double calculateImplementationCost(Specification implementation)
+	{
+		// calculate resource costs
+		AtomicReference<Double> resCosts = new AtomicReference<>(0.0D);
+		implementation.getArchitecture()
+				.forEach(res -> {
+					if ( PropertyService.isCloudResource(res) )
+					{
+						double costRate = PropertyService.getResourceCosts(res);
+						double accumulatedTime = res.getAttribute(TimingEvaluator.ACCUMULATED_USAGE_ATTRIBUTE);
+						var costsByTime = costRate * accumulatedTime;
+						resCosts.updateAndGet(v -> (v + costsByTime));
+
+					}
+					else
+					{
+						resCosts.updateAndGet(v -> (v + PropertyService.getResourceCosts(res)));
+					}
+				});
+
+		// calculate link costs
+		double linkCosts = implementation.getArchitecture()
+				.getEdges()
+				.stream()
+				.mapToDouble(PropertyService::getLinkCost)
+				.sum();
+
+		return resCosts.get() + linkCosts;
 	}
 
 	@Override
