@@ -2,7 +2,6 @@ package at.uibk.dps.dsB.task4.evaluation;
 
 import at.uibk.dps.dsB.task4.properties.PropertyProviderDynamic;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +38,6 @@ class PropertyEstimator {
         if (executionTime == null) {
 
             var executionTimeSamples = new ArrayList<Double>(SAMPLES);
-
             for (int i = 0; i < SAMPLES; i++) {
                 executionTimeSamples.add(propertyProvider.getExecutionTime(mapping));
             }
@@ -61,7 +59,6 @@ class PropertyEstimator {
         if (transmissionTime == null) {
 
             var executionTimeSamples = new ArrayList<Double>(SAMPLES);
-
             for (int i = 0; i < SAMPLES; i++) {
                 executionTimeSamples.add(propertyProvider.getTransmissionTime(comm, l));
             }
@@ -80,7 +77,6 @@ class PropertyEstimator {
         if (carNumber == null) {
 
             var carNumbers = new ArrayList<Integer>(SAMPLES);
-
             for (int i = 0; i < SAMPLES; i++) {
                 carNumbers.add(propertyProvider.getCarNumber());
             }
@@ -97,7 +93,6 @@ class PropertyEstimator {
         if (numberOfPeople == null) {
 
             var numberOfPeoples = new ArrayList<Integer>(SAMPLES);
-
             for (int i = 0; i < SAMPLES; i++) {
                 numberOfPeoples.add(propertyProvider.getNumberOfPeople());
             }
@@ -116,7 +111,6 @@ class PropertyEstimator {
         if (instances == null) {
 
             var instancesSamples = new ArrayList<Integer>(SAMPLES);
-
             for (int i = 0; i < SAMPLES; i++) {
                 instancesSamples.add(propertyProvider.getNumberOfAvailableInstances(cloudResource));
             }
