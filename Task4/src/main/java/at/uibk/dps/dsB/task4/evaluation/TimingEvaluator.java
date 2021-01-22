@@ -1,6 +1,5 @@
 package at.uibk.dps.dsB.task4.evaluation;
 
-import at.uibk.dps.dsB.task4.properties.PropertyProviderDynamic;
 import at.uibk.dps.dsB.task4.properties.PropertyService;
 import java.util.HashMap;
 import java.util.Set;
@@ -29,11 +28,11 @@ public class TimingEvaluator
 		implements ImplementationEvaluator
 {
 
-	protected final PropertyProviderDynamic propertyProvider = new PropertyProviderDynamic();
+	private final EvaluationWrapper evaluationWrapper = EvaluationWrapper.getInstance();
 
-	protected static final int priority = 0;
+	static final int priority = 0;
 
-	protected final Objective makeSpanObjective = new Objective("Makespan [TU]", Sign.MIN);
+	private final Objective makeSpanObjective = new Objective("Makespan [TU]", Sign.MIN);
 	private static final String END_TIME_ATTRIBUTE = "End Time";
 	static final String ACCUMULATED_USAGE_ATTRIBUTE = "Accumulated Usage";
 
@@ -142,7 +141,7 @@ public class TimingEvaluator
 
 		Mapping<Task, Resource> taskResource = taskResources.iterator()
 				.next();
-		double executionTime = this.propertyProvider.getExecutionTime(taskResource);
+		double executionTime = evaluationWrapper.getExecutionTime(taskResource);
 
 		int numberOfInstances = this.getNumberOfInstances(task);
 		Resource resource = taskResource.getTarget();
@@ -157,7 +156,7 @@ public class TimingEvaluator
 		var availableResources = 1;
 		if ( PropertyService.isCloudResource(resource) )
 		{
-			availableResources = this.propertyProvider.getNumberOfAvailableInstances(resource);
+			availableResources = evaluationWrapper.getNumberOfAvailableInstances(resource);
 		}
 		long runs = (long) Math.ceil((double) numberOfInstances / (double) availableResources);
 		return executionTime * runs;
@@ -170,7 +169,7 @@ public class TimingEvaluator
 	{
 		double transmissionTimeOneMessage = routing.getEdges()
 				.stream()
-				.mapToDouble(e -> this.propertyProvider.getTransmissionTime(comm, e))
+				.mapToDouble(e -> evaluationWrapper.getTransmissionTime(comm, e))
 				.sum();
 
 		return transmissionTimeOneMessage * this.getNumberOfInstances(comm);
@@ -184,11 +183,11 @@ public class TimingEvaluator
 	{
 		if ( PropertyService.isIterativeCars(t) )
 		{
-			return this.propertyProvider.getCarNumber();
+			return evaluationWrapper.getCarNumber();
 		}
 		if ( PropertyService.isIterativePeople(t) )
 		{
-			return this.propertyProvider.getNumberOfPeople();
+			return evaluationWrapper.getNumberOfPeople();
 		}
 
 		return 1;

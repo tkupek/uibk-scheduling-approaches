@@ -1,7 +1,5 @@
 package at.uibk.dps.dsB.task4.evaluation;
 
-import at.uibk.dps.dsB.task4.properties.PropertyProvider;
-import at.uibk.dps.dsB.task4.properties.PropertyProviderDynamic;
 import at.uibk.dps.dsB.task4.properties.PropertyService;
 import java.util.concurrent.atomic.AtomicReference;
 import net.sf.opendse.model.Specification;
@@ -20,7 +18,6 @@ import org.opt4j.core.Objectives;
 public class CostEvaluator implements ImplementationEvaluator {
 
 	protected final Objective costObjective = new Objective("Costs [FreeRep Libra]", Sign.MIN);
-	protected final PropertyProvider propertyProvider = new PropertyProviderDynamic();
 
 	@Override
 	public Specification evaluate(Specification implementation, Objectives objectives) {
