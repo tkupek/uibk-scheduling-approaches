@@ -89,4 +89,7 @@ values we are not optimizing on are, therefore, representing an average that con
 
 The downsides of our approach is that it does not consider best- or worst-case scenarios that can get a quite long
 makespan and get expensive. Also our optimization heavily relies on the obtained distribution of the values. If this
-changes, the optimization might actually give us bad results.
+changes, we need to re-run our optimizer.
+
+Note, that our _PropertyEstimator_ can be easily adjusted to not just estimate property values by the average but based
+on different metrics as the lowest / highest values a median or even more sophisticated methods.
