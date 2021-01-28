@@ -5,6 +5,8 @@ import at.uibk.dps.dsB.task4.properties.PropertyProviderDynamic;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import net.sf.opendse.model.Communication;
 import net.sf.opendse.model.Link;
@@ -40,6 +42,11 @@ class PropertyEstimator extends PropertyProviderDynamic {
 			for (int i = 0; i < SAMPLES; i++) {
 				executionTimeSamples.add(propertyProvider.getExecutionTime(mapping));
 			}
+
+			// This would also work (Just to show off that I finally learned about streams :) )
+			
+//			var executionTimeSamples = Stream.generate(() -> propertyProvider.getExecutionTime(mapping)).limit(SAMPLES)
+//					.collect(Collectors.toList());
 
 			executionTime = executionTimeSamples.stream().mapToDouble(cn -> cn).average().orElse(0);
 			executionTimesForMappings.put(mapping.getId(), executionTime);
